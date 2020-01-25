@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Weather</title>
+    <link rel="shortcut icon" href="weather/img/favico.ico" >
+
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" >
+
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" >
+    <meta name="apple-mobile-web-app-capable" content="yes" >
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" >
+    <meta name="format-detection" content="telephone=no" >
+
+    <!-- force webkit on 360 -->
+    <meta name="renderer" content="webkit" >
+    <meta name="force-rendering" content="webkit" >
+    <!-- force edge on IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" >
+    <meta name="msapplication-tap-highlight" content="no">
+
+    <style>
+        html, body { background: black; }
+        .overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: center center url(weather/img/iIcon.png) no-repeat;
+            background-size: auto 120px;
+            background-color: rgba(0, 0, 0, 1);
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300&display=swap" rel="stylesheet" >
+    <link rel="stylesheet" href="weather/css/weather.min.css" >
+
+    <!-- Libs ********************************************* -->
+    <script src="libs/jquery-2.1.4.min.js"></script>
+	<script src="js/interface.min.js"></script>
+    <script src="js/utils.min.js"></script>
+    <script src="weather/js/weather.min.js"></script>
+
+</head>
+
+<body>
+    <iframe id="web_srv" class="frame_esp_controls"></iframe>
+    <div id="content"></div>
+    <div class="overlay"></div>
+</body>
+
+</html>

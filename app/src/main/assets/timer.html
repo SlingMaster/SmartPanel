@@ -1,0 +1,82 @@
+﻿<!DOCTYPE html>
+<html lang="en-US-x-Hixie">
+
+<head>
+    <title>Timer</title>
+    <link rel="shortcut icon" href="timer/img/favico.ico" >
+
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type" >
+
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" >
+    <meta name="apple-mobile-web-app-capable" content="yes" >
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" >
+    <meta name="format-detection" content="telephone=no" >
+
+    <!-- force webkit on 360 -->
+    <meta name="renderer" content="webkit" >
+    <meta name="force-rendering" content="webkit" >
+    <!-- force edge on IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" >
+    <meta name="msapplication-tap-highlight" content="no">
+    <style>
+        html, body { background: black; }
+        .overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: center center url(timer/img/iIcon.png) no-repeat;
+            background-size: auto 128px;
+            background-color: rgba(0, 0, 0, 1);
+        }
+    </style>     
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300&display=swap" rel="stylesheet" >
+    <link rel="stylesheet" href="timer/css/timer.min.css" >
+    <!-- Libs ********************************************* -->
+    <script src="libs/jquery-2.1.4.min.js"></script>
+    <script src="js/interface.min.js"></script>
+    <script src="js/utils.min.js"></script>
+    <script src="timer/js/timer.min.js"></script>
+    <!-- <script type="text/javascript" src="timer/js/main.js"></script> -->
+
+</head>
+
+<body>
+    <div class="bg"></div>
+    <div id="win" class="cs_content_container" onclick="onClickSwap(event)">
+        <div id="left-box" class="box">
+            <div id="analog" class="cs_content">
+                <div id="cur_month_gear" class="cs_month_gear"></div>
+                <div class="mask"></div>
+
+                <div class="gear"></div>
+                <div id="tourbillon" class="tourbillon">
+                    <div class="bronze_gear"></div>
+                    <div class="anker_gear"></div>
+                    <div class="anker"></div>
+                    <div class="pendulum"></div>
+                    <div class="spring"></div>
+                    <div class="tourbillon_pillar"></div>
+                </div>
+
+                <div class="cs_widget">
+                    <div id="hour" class="cs_arrows">
+                        <div id="arrow_hour" class="cs_arrow_hour run-animation"></div>
+                    </div>
+                    <div id="min" class="cs_arrows">
+                        <div id="arrow_min" class="cs_arrow_min run-animation"></div>
+                    </div>
+                    <div id="sec" class="cs_arrows">
+                        <div id="arrow_sec" class="cs_arrow_sec run-animation"></div>
+                    </div>
+                </div>
+
+            </div>
+            <div id="time" class="time"></div>
+        </div>
+    </div>
+    <div class="overlay"></div>
+
+</body>
+
+</html>

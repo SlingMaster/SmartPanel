@@ -1,0 +1,29 @@
+<!--
+  ~ Copyright (c) 2020.
+  ~ RF Controls
+  ~ Design and Programming by Alex Dovby
+  -->
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="@drawable/ic_grp_smart_home"
+    android:foregroundGravity="center_vertical"
+    android:keepScreenOn="true"
+    android:paddingLeft="@dimen/ic_container"
+    android:paddingRight="@dimen/ic_container"
+    tools:context="com.jsc.smartpanel.FullscreenActivity">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:text="@string/pref_group_title_schedule"
+        android:textColor="@color/colorSmallText"
+        android:textSize="18sp" />
+
+
+</FrameLayout>

@@ -1,0 +1,52 @@
+<!--
+  ~ Copyright (c) 2019.
+  ~ RF Controls
+  ~ Design and Programming by Alex Dovby
+  -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/empty">
+
+    </PreferenceCategory>
+    <Preference
+        android:icon="@drawable/ic_grp_remote"
+        android:selectable="false"
+        android:shouldDisableView="false"
+        android:title="@string/pref_group_title_remote" />
+    <EditTextPreference
+        android:icon="@drawable/ic_port"
+        android:inputType="numberDecimal"
+        android:key="server_port"
+        android:maxLength="4"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:summary="..."
+        android:title="@string/pref_title_port" />
+    <SwitchPreference
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:defaultValue="false"
+        android:icon="@drawable/ic_default"
+        android:key="sw_reset_default"
+        android:summary="@string/pref_title_desc"
+        android:title="@string/pref_title_reset" />
+
+    <Preference
+        android:icon="@drawable/ic_grp_debug"
+        android:selectable="false"
+        android:shouldDisableView="false"
+        android:title="@string/pref_group_title_develop" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:icon="@drawable/ic_debug"
+        android:key="sw_debug_mode"
+        android:title="@string/pref_title_debug_mode"/>
+    <SwitchPreference
+        android:defaultValue="false"
+        android:icon="@drawable/ic_clear"
+        android:key="sw_clear_cache"
+        android:title="@string/pref_title_clear_cache" />
+
+</PreferenceScreen>

@@ -1,0 +1,33 @@
+<!--
+  ~ Copyright (c) 2019.
+  ~ RF Controls
+  ~ Design and Programming by Alex Dovby
+  -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/empty">
+
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:icon="@drawable/ic_48"
+        android:layout="@layout/pref_about_ic" />
+    <Preference
+        android:key="version"
+        android:selectable="false"
+        android:summary="@string/version"
+        android:title="@string/about_app_title" />
+    <Preference
+        android:key="device_ip"
+        android:selectable="false"
+        android:summary="@string/def_node_bathroom_url"
+        android:title="@string/about_ip_title" />
+    <Preference
+        android:selectable="false"
+        android:shouldDisableView="true"
+        android:summary="@string/about_desc" />
+    <Preference
+        android:selectable="false"
+        android:shouldDisableView="true"
+        android:summary="@string/about_copyright"
+        android:title="@string/empty" />
+</PreferenceScreen>

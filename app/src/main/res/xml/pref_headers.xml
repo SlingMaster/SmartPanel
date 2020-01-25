@@ -1,0 +1,30 @@
+<!--
+  ~ Copyright (c) 2019.
+  ~ RF Controls
+  ~ Design and Programming by Alex Dovby
+  -->
+
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+    <header
+        android:defaultValue="@string/pref_header_about" android:icon="@drawable/ic_menu_preferences"
+        android:fragment="com.jsc.smartpanel.SettingsActivity$GeneralPreferenceFragment"
+
+        android:summary="@string/pref_summary_general"
+        android:title="@string/pref_header_general" />
+    <header
+        android:fragment="com.jsc.smartpanel.SettingsActivity$AdvancedPreferenceFragment"
+        android:icon="@drawable/ic_advanced"
+        android:summary="@string/pref_summary_about"
+        android:title="@string/pref_header_advanced" />
+    <header
+        android:fragment="com.jsc.smartpanel.SettingsActivity$SchedulePreferenceFragment"
+        android:icon="@drawable/ic_schedule"
+        android:summary="@string/pref_summary_schedule"
+        android:title="@string/pref_header_schedule" />
+    <header
+        android:fragment="com.jsc.smartpanel.SettingsActivity$AboutPreferenceFragment"
+        android:icon="@drawable/ic_info"
+        android:summary="@string/pref_summary_about"
+        android:title="@string/pref_header_about" />
+</preference-headers>
+

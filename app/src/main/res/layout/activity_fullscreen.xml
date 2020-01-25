@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:keepScreenOn="true"
+    tools:context="com.jsc.smartpanel.FullscreenActivity">
+
+    <!-- The primary full-screen view. This can be replaced with whatever view
+         is needed to present your content, e.g. VideoView, SurfaceView,
+         TextureView, etc. -->
+
+    <!-- This FrameLayout insets its children based on system windows using
+         android:fitsSystemWindows. -->
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <WebView
+            android:id="@+id/web_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </WebView>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/splash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:fitsSystemWindows="false"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/splash_height"
+            android:layout_marginTop="@dimen/splash_margin"
+            android:layout_marginBottom="@dimen/webview_top"
+            android:adjustViewBounds="false"
+            android:contentDescription="@string/about_app_title"
+            android:cropToPadding="false"
+            android:scaleType="centerInside"
+            app:srcCompat="@drawable/splash" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/def_margin"
+            android:fitsSystemWindows="true"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/ic_padding"
+            android:paddingRight="@dimen/ic_padding"
+            android:visibility="visible">
+
+            <ImageView
+                android:id="@+id/icon1"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/ic_launcher_size"
+                android:layout_gravity="top"
+                android:layout_weight="1"
+                android:contentDescription="@string/is_desc"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/btn_radio" />
+
+            <ImageView
+                android:id="@+id/icon2"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/ic_launcher_size"
+                android:layout_gravity="top"
+                android:layout_weight="1"
+                android:contentDescription="@string/is_desc"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/btn_smart" />
+
+            <ImageView
+                android:id="@+id/icon3"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/ic_launcher_size"
+                android:layout_gravity="top"
+                android:layout_weight="1"
+                android:contentDescription="@string/is_desc"
+                android:foregroundGravity="center"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/btn_stats" />
+
+            <ImageView
+                android:id="@+id/icon4"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/ic_launcher_size"
+                android:layout_gravity="top"
+                android:layout_weight="1"
+                android:contentDescription="@string/is_desc"
+                android:foregroundGravity="center"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/btn_timer" />
+
+            <ImageView
+                android:id="@+id/icon5"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/ic_launcher_size"
+                android:layout_gravity="top"
+                android:layout_weight="1"
+                android:contentDescription="@string/is_desc"
+                android:fadingEdge="horizontal"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/btn_weather" />
+
+            <ImageView
+                android:id="@+id/icon6"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/ic_launcher_size"
+                android:layout_gravity="top"
+                android:layout_weight="1"
+                android:contentDescription="@string/is_desc"
+                android:fadingEdge="horizontal"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/btn_sling" />
+
+            <!--            <ImageView-->
+            <!--                android:id="@+id/icon8"-->
+            <!--                android:layout_width="0dp"-->
+            <!--                android:layout_height="@dimen/ic_launcher_size"-->
+            <!--                android:layout_gravity="top"-->
+            <!--                android:layout_weight="1"-->
+            <!--                android:contentDescription="@string/is_desc"-->
+            <!--                android:fadingEdge="horizontal"-->
+            <!--                android:scaleType="centerInside"-->
+            <!--                app:srcCompat="@drawable/ic_debug" />-->
+
+            <ImageView
+                android:id="@+id/icon7"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/ic_launcher_size"
+                android:layout_gravity="top"
+                android:layout_weight="1"
+                android:contentDescription="@string/is_desc"
+                android:fadingEdge="horizontal"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/btn_preset" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/btnShowCtrl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/ic_launcher_size"
+        android:layout_gravity="bottom"
+        android:background="@android:color/black"
+        android:contentDescription="@string/is_desc"
+        android:scaleType="center"
+        app:srcCompat="@drawable/ic_more" />
+
+    <LinearLayout
+        android:id="@+id/debug_panel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginEnd="@dimen/ic_padding"
+        android:layout_marginRight="@dimen/ic_padding"
+        android:background="@drawable/gradient_window"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/resData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/design_default_color_primary_dark"
+            android:gravity="center"
+            android:padding="@dimen/webview_top"
+            android:text="@string/app_name"
+            android:textColor="@color/colorSmallText" />
+
+        <TextView
+            android:id="@+id/resHeader"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/header"
+            android:paddingTop="@dimen/debug_panel_padding"
+            android:paddingBottom="@dimen/min_margin"
+            android:text="@string/label_bytes_null"
+            android:textAlignment="center"
+            android:textColor="@color/colorSmallText"
+            android:textSize="24sp"
+            app:fontFamily="monospace" />
+
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
+        <LinearLayout
+            android:id="@+id/fullscreen_content_controls"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="bottom"
+            android:orientation="horizontal"
+            tools:ignore="UselessParent">
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</FrameLayout>

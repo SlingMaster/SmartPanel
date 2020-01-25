@@ -1,0 +1,60 @@
+<!--
+  ~ Copyright (c) 2019.
+  ~ RF Controls
+  ~ Design and Programming by Alex Dovby
+  -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--    <SwitchPreference-->
+    <!--        android:defaultValue="true"-->
+    <!--        android:key="example_switch"-->
+    <!--        android:summary="@string/pref_description_social_recommendations"-->
+    <!--        android:title="@string/pref_title_social_recommendations" />-->
+    <PreferenceCategory android:title="@string/empty">
+
+    </PreferenceCategory>
+    <Preference
+        android:icon="@drawable/ic_grp_smart_home"
+        android:selectable="false"
+        android:shouldDisableView="false"
+        android:title="@string/pref_group_title_general" />
+    <EditTextPreference
+        android:defaultValue="@string/def_node_weather_url"
+        android:icon="@drawable/ic_ip"
+        android:inputType="textCapWords"
+        android:key="ip_weather"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_ip_weather" />
+    <EditTextPreference
+        android:defaultValue="@string/def_node_weather_chip"
+        android:icon="@drawable/ic_chip"
+        android:inputType="textCapWords"
+        android:key="chip_weather"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_chip_weather" />
+    <EditTextPreference
+        android:defaultValue="@string/def_node_bathroom_url"
+        android:icon="@drawable/ic_ip"
+        android:inputType="textCapWords"
+        android:key="ip_bathroom"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_ip_bathroom" />
+    <EditTextPreference
+        android:defaultValue="@string/def_node_bathroom_chip"
+        android:icon="@drawable/ic_chip"
+        android:inputType="textCapWords"
+        android:key="chip_bathroom"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_chip_bathroom" />
+
+
+</PreferenceScreen>

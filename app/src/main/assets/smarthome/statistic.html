@@ -1,0 +1,83 @@
+﻿<!DOCTYPE HTML>
+<html lang="en-US-x-Hixie">
+
+<head>
+	<title>WR Statistic</title>
+	<link rel="shortcut icon" href="img/favico_hw.ico">
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- Run in full-screen mode. -->
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<!-- Make the status bar black with white text. -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<!-- Disable phone number detection. -->
+	<meta name="format-detection" content="telephone=no">
+	<!-- Set viewport. -->
+
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" > -->
+	<style>
+		html,
+		body {
+			background: black;
+		}
+	</style>
+
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400&display=swap&subset=cyrillic"
+		rel="stylesheet">
+	<link href="css/smarthome.min.css" rel="stylesheet" type="text/css">
+	<link href="css/statistic.min.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="../libs/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="../libs/moment.min.js"></script>
+
+	<!--script type="text/javascript" src="libs/iscroll5.min.js"></script-->
+
+
+	<script type="text/javascript" src="js/statistic.min.js"></script>
+	<!-- <script type="text/javascript" src="js_statistic/cloud.js"></script>
+	<script type="text/javascript" src="js_statistic/main.js"></script> -->
+	<!--script type="text/javascript" src="js/crossdomain.js"></script>
+	<script type="text/javascript" src="js_wr/constants.js"></script-->
+</head>
+
+<body>
+	<div id="win" class="content css-opacity">
+
+
+		<div class="panels stat">
+			<div class="panel_esp">
+				<div class="ds_box caption">
+					<div class="title_location">bathroom statistic per day</div>
+				</div>
+				<div class="ds_box stats_container">
+					<div id="stats" class="ds_box stats">
+						<div class="ds stats">
+							<div class="header_stats"></div>
+						</div>
+						<div class="ds stats">
+							<div class="cs_label_stats">&#8226;</div>
+						</div>
+						<div class="ds stats">
+							<div class="cs_label_stats">&#8226;</div>
+						</div>
+						<div class="ds stats">
+							<div class="cs_label_stats">&#8226;</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="service_container">
+				<div id="statistic_cool_water" class="ds graph"></div>
+				<div class="cs_graph_date"></div>
+
+				<div id="interval_val" class="cs_label">
+					set interval statistic value
+				</div>
+			</div>
+			<div class="ds_box copyright">&#169; 2020 JENERAL SAMOPAL COMPANY</div>
+		</div>
+	</div>
+</body>
+
+</html>

@@ -1,0 +1,69 @@
+﻿<!DOCTYPE HTML>
+<html lang="en-US-x-Hixie">
+
+<head>
+	<title>Smart Home Control</title>
+	<link rel="shortcut icon" href="img/favicon.ico" >
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" >
+	<!-- Run in full-screen mode. -->
+	<meta name="apple-mobile-web-app-capable" content="yes" >
+	<!-- Make the status bar black with white text. -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" >
+	<!-- Disable phone number detection. -->
+	<meta name="format-detection" content="telephone=no" >
+	<!-- Set viewport. -->
+
+	<meta name="viewport" content="width=device-width, initial-scale=.70, user-scalable=no" >
+	<style>
+		html,
+		body {
+			background: black;
+		}
+	</style>
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400&display=swap&subset=cyrillic"
+		rel="stylesheet">
+	<link href="css/smarthome.min.css" rel="stylesheet" type="text/css">
+	<script type="text/javascript" src="../libs/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="js/utils.min.js"></script>
+	<script type="text/javascript" src="js/main_sh.min.js"></script>
+</head>
+
+<body>
+	<div id="win" class="content css-opacity">
+		<div class="panels">
+			<!--  top panel -->
+			<div class="panel_esp">
+				<div class="ds_box caption">
+					<div class="title_location">smart home control</div>
+				</div>
+
+				<div id="displays" class="cs_container"></div>
+				<div class="box">
+					<div class="cs_label cs_shadow">relay sensor control</div>
+				</div>
+				<div class="ds_box">
+					<div class="ds" onClick="clickControlESP(event)">
+						<button id="r1" class="cs_btn_ui s_chromecast" value="relay1"></button>
+						<button id="r2" class="cs_btn_ui s_key_light" value="relay2"></button>
+						<button id="r3" class="cs_btn_ui s_power_audio" value="relay3"></button>
+						<button id="r4" class="cs_btn_ui s_amazon" value="relay4"></button>
+					</div>
+				</div>
+				<div class="cs_label cs_shadow"></div>
+				<iframe id="web_srv" class="frame_esp_controls" style="background: #000;"></iframe>
+			</div>
+
+			<!-- bottom panel -->
+			<div class="service_container">
+				<div id="chipESP" class="cs_container"></div>
+
+			</div>
+			<div class="ds_box copyright">• • •</div>
+		</div>
+
+	</div>
+</body>
+
+</html>

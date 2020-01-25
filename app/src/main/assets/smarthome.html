@@ -1,0 +1,101 @@
+﻿<!DOCTYPE HTML>
+<html lang="en-US-x-Hixie">
+
+<head>
+    <title>Smart Home • All Controls</title>
+    <link rel="shortcut icon" href="smarthome/img/favico.ico" >
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+    <!-- Run in full-screen mode. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" >
+    <!-- Make the status bar black with white text. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" >
+    <!-- Disable phone number detection. -->
+    <meta name="format-detection" content="telephone=no" >
+    <!-- Set viewport. -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" >
+
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            border: 0;
+            vertical-align: baseline;
+            border: none;
+            background: black;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            -moz-user-select: none;
+            -khtml-user-select: none;
+        }
+
+        * {
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            /*Firefox 1-3*/
+            -webkit-box-sizing: border-box;
+            /* Safari */
+        }
+
+        .content_container {
+            position: absolute;
+            top: 0px;
+            float: left;
+            width: 100%;
+            height: 100%;
+            padding: 40px 0 70px 0;
+            text-align: center;
+            overflow: hidden;
+            background: black;
+            /* border: solid thin #282d39; */
+            border-top: none;
+            /* max-height: 700px; */
+        }
+
+        .content_title {
+            width: 100%;
+            /* height: 20px; */
+            letter-spacing: 10px;
+            padding-bottom: 20px;
+            color: #73b8e5;
+            text-transform: uppercase;
+            font-size: 18px;
+        }
+
+        .panels_content {
+            position: relative;
+            float: none;
+            display: inline-block;
+            width: 422px;
+            height: 100%;
+            border: none;
+            background: black;
+            background-color: black;
+            padding-bottom: 20px;
+            /* border-bottom: solid 20px #000; */
+        }
+
+        .overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: center center url(smarthome/img/iIcon.png) no-repeat;
+            background-size: auto 128px;
+            background-color: rgba(0, 0, 0, 1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content_container">
+        <div class="content_title">• Smart Home Statistic and Control •</div>
+        <iframe class="panels_content" src="smarthome/main_wr.html"></iframe>
+        <!-- <iframe class="panels_content" src="smarthome/statistic.html"></iframe> -->
+        <iframe class="panels_content" src="smarthome/main_sh.html"></iframe>
+    </div>
+    <!-- <div class="overlay"></div> -->
+</body>
+
+</html>

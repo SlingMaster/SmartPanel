@@ -1,0 +1,74 @@
+apply plugin: 'com.android.application'
+
+android {
+    signingConfigs {
+        config {
+            keyAlias 'AS'
+            keyPassword 'SlingMaster'
+            storeFile file('F:/ASProject/KeySigning/as_jsc.jks')
+            storePassword 'SlingMasterJSC'
+        }
+    }
+    compileSdkVersion 28
+    // ======================================================
+    // auto increment application version
+    // ======================================================
+    def versionPropsFile = file('version.properties')
+    Properties versionProps = new Properties()
+    if (versionPropsFile.exists())
+        versionProps.load(new FileInputStream(versionPropsFile))
+    def _patch = (versionProps['PATCH'] ?: "0").toInteger() + 1
+    def _major = (versionProps['MAJOR'] ?: "0").toInteger()
+    def _minor = (versionProps['MINOR'] ?: "0").toInteger()
+    List<String> runTasks = gradle.startParameter.getTaskNames()
+    def value = 0
+    for (String item : runTasks)
+        if (item.contains("assembleRelease")) {
+            value = 1
+        }
+    def _versionCode = (versionProps['VERSION_CODE'] ?: "0").toInteger() + value
+    if (_patch == 99) {
+        _patch = 0
+        _minor = _minor + 1
+    }
+    if (_minor == 99) {
+        _minor = 0
+        _major = _major + 1
+    }
+    versionProps['MAJOR'] = _major.toString()
+    versionProps['MINOR'] = _minor.toString()
+    versionProps['PATCH'] = _patch.toString()
+    versionProps['VERSION_CODE'] = _versionCode.toString()
+    versionProps.store(versionPropsFile.newWriter(), null)
+    def _versionName = "${_major}.${_versionCode}.${_minor}.${_patch}"
+    // ======================================================
+    defaultConfig {
+        applicationId 'com.jsc.smartpanel'
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 1
+        // ==================================================
+        versionName _versionName
+        // ==================================================
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    buildToolsVersion '28.0.3'
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.android.support:support-vector-drawable:28.0.0'
+    testImplementation 'junit:junit:4.13'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'com.android.support:design:28.0.0'
+}
