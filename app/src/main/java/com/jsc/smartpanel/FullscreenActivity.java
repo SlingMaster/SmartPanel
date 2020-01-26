@@ -920,7 +920,6 @@ public class FullscreenActivity extends AppCompatActivity {
                             getResources().getString(R.string.pkg_radio) + getResources().getString(R.string.app_entry)));
                     // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
-                    super.finish();
                 } else
                     Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
                 break;
