@@ -16,15 +16,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
@@ -314,52 +311,6 @@ public class FullscreenActivity extends AppCompatActivity {
         // ------------------------------------
         // webView = (WebView) findViewById(R.id.web_view);
         webView = findViewById(R.id.web_view);
-        // set WebView Style background and scrollbar ----
-        webView.setVerticalScrollBarEnabled(false);
-        webView.setHorizontalScrollBarEnabled(false);
-
-        //webView.setScrollBarStyle(WebView.SCROLLBARS_OUTSIDE_OVERLAY);
-        //webView.setScrollbarFadingEnabled(false);
-        // set default black color ------------
-        webView.setBackgroundColor(0);
-
-        // web settings --------------------------------------
-        WebSettings webSettings = webView.getSettings();
-
-        // ??? ---------------------------------------
-        webSettings.setLoadsImagesAutomatically(true);
-        webSettings.setAllowFileAccess(true);
-        webSettings.setAppCacheEnabled(true);
-        // ??? ---------------------------------------
-
-        // включаем поддержку JavaScript
-        webView.getSettings().setJavaScriptEnabled(true);
-        // определим экземпляр MyWebViewClient.
-        // Он может находиться в любом месте после инициализации объекта WebView
-        webView.setWebViewClient(new MyWebViewClient());
-//        webView.setWebChromeClient(new WebChromeClient() {
-//            @Override
-//            public void onProgressChanged(WebView view, int newProgress) {
-//                //change your progress bar
-//                Log.w(TAG, "onProgressChanged : " + newProgress + "%");
-//                if (newProgress > 50) {
-//                    //progressBar.setVisibility(View.GONE);
-//                    webView.setVisibility(View.VISIBLE);
-//                }
-//            }
-//        });
-
-        webSettings.setSupportZoom(false);
-        webSettings.setBuiltInZoomControls(false);
-        webSettings.setLoadsImagesAutomatically(true);
-        webSettings.setAllowFileAccess(true);
-
-        // set cash app ---------------------------------------
-        webSettings.setAppCacheEnabled(true);
-        // set wiewport scale ---------------
-        // webSettings.setUseWideViewPort(isWideViewPortRequired());
-        webSettings.setUseWideViewPort(true);
-        webSettings.setLoadWithOverviewMode(true);
         webView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -517,18 +468,6 @@ public class FullscreenActivity extends AppCompatActivity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
-    }
-
-    // ----------------------------------------
-    private class MyWebViewClient extends WebViewClient {
-        //        @TargetApi(19)
-        @RequiresApi(api = Build.VERSION_CODES.N)
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-
-            view.loadUrl(request.getUrl().toString());
-            return true;
-        }
     }
 
     @SuppressLint("addJavascriptInterface")
@@ -981,7 +920,6 @@ public class FullscreenActivity extends AppCompatActivity {
                             getResources().getString(R.string.pkg_radio) + getResources().getString(R.string.app_entry)));
                     // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
-                    super.finish();
                 } else
                     Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
                 break;
