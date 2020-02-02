@@ -13,9 +13,14 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.text.Html;
 import android.text.Spanned;
+import android.view.View;
 import android.widget.ImageView;
+
+import com.jsc.smartpanel.R;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -190,5 +195,18 @@ public class GlobalUtils {
         }
 
         return false;
+    }
+
+    public static String getString(@NonNull Context context, @StringRes int resource) {
+        return context.getResources().getString(resource);
+    }
+
+    public static void hideSystemUI(@NonNull View view) {
+        view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 }
