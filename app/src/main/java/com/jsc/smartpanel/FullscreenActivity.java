@@ -641,22 +641,40 @@ public class FullscreenActivity extends AppCompatActivity {
 
 
     private void decryptCommand(String data) {
+        JSONObject requestContent = new JSONObject();
+        String cmdStr;
+        int cmd;
         if (data == null) {
             System.out.println("decryptCommand | data null");
             return;
         }
-        String header = data.substring(2, 27);
-        int body_length = data.length() - 29;
-        // System.out.println("decryptCommand | body size: " + body_length);
-        String body = (body_length > 0) ? data.substring(27, data.length() - 2) : "";
+
+        cmdStr = "00";
+        try {
+            uiRequest = new JSONObject(data);
+            if (uiRequest.has("cmd")) {
+                cmdStr = uiRequest.optString("cmd");
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        cmd = Integer.parseInt(cmdStr, 16) ;
+
+
+//        String header = data.substring(2, 27);
+//        int body_length = data.length() - 29;
+//        String body = (body_length > 0) ? data.substring(27, data.length() - 2) : "";
 
 //        System.out.println("decryptCommand | header:" + header + " | size: " + data.length());
 //        System.out.println("decryptCommand | data:" + data.substring(2, 27) + " | size: " + data.length());
 //        System.out.println("decryptCommand | body:" + convertHexToString(body.replaceAll(" ", "")) + " | size: " + body_length);
 //
-        responseHeader.setText(header);
-        responseData.setText(body);
-        int cmd = PackageCreator.getCommandID(header);
+//        responseHeader.setText(header);
+        responseData.setText("JSON : " + data + " | DEC • " + String.valueOf(cmd));
+        responseHeader.setText(" 00 " + cmdStr + " 00 00 00 00 00 00");
+        // responseData.setText(body);
+        // int cmd = PackageCreator.getCommandID(header);
         externalCMD(cmd);
     }
 

@@ -8,8 +8,10 @@ package com.jsc.smartpanel;
 
 import android.support.annotation.NonNull;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -59,7 +61,8 @@ class CommunicationServer {
         // -----------------------------------
         /* создаем буфер для данных */
         byte[] buffer;
-        private InputStream in;
+        //private InputStream in;
+        private BufferedReader in;
         // -----------------------------------
 
         // public CommunicationThread(Socket clientSocket) {
@@ -68,7 +71,10 @@ class CommunicationServer {
 
             try {
                 this.buffer = new byte[16];
-                this.in = this.clientSocket.getInputStream();
+                //this.in = this.clientSocket.getInputStream();
+                //receive the message which the server sends back
+                in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
+                // this.in = this.clientSocket.getInputStream();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -79,16 +85,19 @@ class CommunicationServer {
             while (!Thread.currentThread().isInterrupted()) {
 
                 try {
-//                    String read = input.readLine();
-                    int countS = in.read(buffer, 0, buffer.length);
-                    if (countS > 0) {
+                    String read = in.readLine();
+
+                    // int countS = in.read(buffer, 0, buffer.length);
+                    if (!read.equals("")) {
+//                    if (countS > 0) {
                         // decode data header, restore src CO and DB ----
-                        byte[] header;
-                        header = PackageCreator.decodePackage(PackageCreator.copyPartArray(buffer, 0, countS));
-                        String headerStr = PackageCreator.getHeaderStr(header);
+                        //byte[] header;
+                        //header = PackageCreator.decodePackage(PackageCreator.copyPartArray(buffer, 0, countS));
+                        //String headerStr = PackageCreator.getHeaderStr(header);
                         //System.out.println("========== TcpClient header length: " + header.length + " | headerStr : " + headerStr );
                         if (activity != null) {
-                            activity.updateOnUIThread(headerStr);
+                            //activity.updateOnUIThread(headerStr);
+                            activity.updateOnUIThread(read);
 //                            clientSocket.close();
 //                            Thread.currentThread().interrupt();
                         }
