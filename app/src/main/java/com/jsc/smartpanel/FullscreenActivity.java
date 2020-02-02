@@ -9,16 +9,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
@@ -55,31 +52,13 @@ public class FullscreenActivity extends AppCompatActivity {
     private TextView responseHeader;
     private TextView responseData;
     private View splash;
-    public static Resources mResources;
     public static SharedPreferences preference;
 
-    /**
-     * Whether or not the system UI should be auto-hidden after
-     * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-     */
-    private static final boolean AUTO_HIDE = true;
     private static boolean Night = false;
     private static boolean debugMode = false;
     private static int cur_screen = 1;
     private static int lastCMD = 0;
     private static boolean sleep_mode = false;
-    /**
-     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-     * user interaction before hiding the system UI.
-     */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-//    private static Context mContext;
-    /**
-     * Some older devices needs a small delay between UI widget updates
-     * and a change of the status and navigation bar.
-     */
-    private static final int UI_ANIMATION_DELAY = 300;
-    private final Handler mHideHandler = new Handler();
     WebView webView;
 
     // js interface ------------
@@ -88,64 +67,18 @@ public class FullscreenActivity extends AppCompatActivity {
     public static JSONObject sendData;
     // -------------------------
 
-    private final Runnable mHidePart2Runnable = new Runnable() {
-        @SuppressLint("InlinedApi")
-        @Override
-        public void run() {
-            GlobalUtils.hideSystemUI(webView);
-        }
-    };
-
     private View mControlsView;
-    private final Runnable mShowPart2Runnable = new Runnable() {
-        @Override
-        public void run() {
-            // Delayed display of UI elements
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.show();
-            }
-//            mControlsView.setVisibility(View.VISIBLE);
-        }
-    };
     private boolean mVisible;
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
 
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-            return false;
-        }
-    };
-
-    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-//        View btnApp8;
-        mResources = getResources();
 
         super.onCreate(savedInstanceState);
         preference = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Device set port ---------------------
         String strPort = preference.getString("server_port", getResources().getString(R.string.def_port));
-        if (strPort != null) {
-            port = Integer.valueOf(strPort);
-        }
+        port = Integer.valueOf(strPort);
         // -------------------------------------
 
         Intent intent = getIntent();
@@ -162,7 +95,6 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         }
 
-
         // SCREEN_BRIGHT_WAKE_LOCK
         // PowerManager mPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -178,8 +110,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
         responseHeader = findViewById(R.id.resHeader);
         responseData = findViewById(R.id.resData);
-        // -------------------------------------------
-
 
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
@@ -226,12 +156,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
         findViewById(R.id.icon4).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_TIMER));
 
-        findViewById(R.id.icon5).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                externalCMD(Constants.CMD_LOAD_WEATHER);
-            }
-        });
+        findViewById(R.id.icon5).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_WEATHER));
 
         findViewById(R.id.icon6).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -292,12 +217,14 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        GlobalUtils.hideSystemUI(webView);
+
         if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
         }
         // performed by a separate request ==================
-        // new readXmlTask(FullscreenActivity.this).execute();
+        // new ReadXmlTask(FullscreenActivity.this).execute();
     }
 
     @Override
@@ -313,59 +240,14 @@ public class FullscreenActivity extends AppCompatActivity {
         super.onLowMemory();
     }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-        delayedHide(100);
-    }
-
     private void toggle() {
         if (mVisible) {
-            hide();
+            mControlsView.setVisibility(View.GONE);
+            mVisible = false;
         } else {
-            show();
+            mControlsView.setVisibility(View.VISIBLE);
+            mVisible = true;
         }
-    }
-
-    private void hide() {
-        // Hide UI first
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
-        mControlsView.setVisibility(View.GONE);
-        mVisible = false;
-
-        // Schedule a runnable to remove the status and navigation bar after a delay
-        mHideHandler.removeCallbacks(mShowPart2Runnable);
-        mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
-    }
-
-    @SuppressLint("InlinedApi")
-    private void show() {
-        // Show the system bar
-//        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-//                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        webView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        mVisible = true;
-
-        // Schedule a runnable to display UI elements after a delay
-        mHideHandler.removeCallbacks(mHidePart2Runnable);
-        mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
-    }
-
-    /**
-     * Schedules a call to hide() in delay milliseconds, canceling any
-     * previously scheduled calls.
-     */
-    private void delayedHide(int delayMillis) {
-        mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
 
     @SuppressLint("addJavascriptInterface")
@@ -431,7 +313,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
                 break;
             case JSConstants.EVT_WEATHER:
-                new readXmlTask(FullscreenActivity.this).execute();
+                String list_url = getResources().getString(R.string.weather_xml);
+                new ReadXmlTask(this, list_url).execute();
                 // callbackToUI(JSConstants.CMD_WEATHER_DATA, createResponse(requestContent, sendData));
                 break;
             case JSConstants.EVT_NEXT:
@@ -499,13 +382,13 @@ public class FullscreenActivity extends AppCompatActivity {
 
             // string to int ---------------------
             String tempNumStr = preference.getString("start_day", "6");
-            int num = Integer.parseInt(tempNumStr != null ? tempNumStr : "6");
+            int num = Integer.parseInt(tempNumStr);
             obj.put("start_day", num);
             tempNumStr = preference.getString("start_night", "20");
-            num = Integer.parseInt(tempNumStr != null ? tempNumStr : "20");
+            num = Integer.parseInt(tempNumStr);
             obj.put("start_night", num);
             tempNumStr = preference.getString("swap_frequency", "1");
-            num = Integer.parseInt(tempNumStr != null ? tempNumStr : "1");
+            num = Integer.parseInt(tempNumStr);
             obj.put("swap_frequency", num);
             // -----------------------------------
         } catch (Exception ex) {
@@ -536,23 +419,23 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     }
 
-
     // =========================================================
     // Read XML Weather
     // =========================================================
-    private static class readXmlTask extends AsyncTask<Void, Void, String> {
+    private static class ReadXmlTask extends AsyncTask<Void, Void, String> {
         // --------------------------------------------------
         private WeakReference<FullscreenActivity> activityReference;
+        private final String listUrl;
 
         // only retain a weak reference to the activity
-        readXmlTask(FullscreenActivity context) {
-            activityReference = new WeakReference<>(context);
+        ReadXmlTask(FullscreenActivity activity, @NonNull String list_url) {
+            activityReference = new WeakReference<>(activity);
+            listUrl = list_url;
         }
 
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
+        HttpURLConnection urlConnection;
+        BufferedReader reader;
         String resultXML = "";
-        String list_url = mResources.getString(R.string.weather_xml);
 
         // ----------------------------------------------------
         @Override
@@ -560,7 +443,7 @@ public class FullscreenActivity extends AppCompatActivity {
             // System.out.println("trace | list_url : " + list_url);
             try {
 
-                URL url = new URL(list_url);
+                URL url = new URL(listUrl);
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
@@ -599,7 +482,6 @@ public class FullscreenActivity extends AppCompatActivity {
                 System.out.println("Unexpected JSON exception" + e);
             }
             activity.callbackToUI(JSConstants.CMD_WEATHER_DATA, activity.createResponse(uiRequest, sendData));
-
         }
     }
 
