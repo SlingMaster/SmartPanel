@@ -12,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -55,15 +54,11 @@ public class FullscreenActivity extends AppCompatActivity {
     private ServerSocket serverSocket;
     Handler updateConversationHandler;
     Thread serverThread = null;
-    boolean b_exit;
-
     private static long back_pressed;
     public static int port;
-    View splash;
     private TextView responseHeader;
     private TextView responseData;
-
-    //    TextView msg;
+    private View splash;
     public static Resources mResources;
     public static SharedPreferences preference;
 
@@ -134,8 +129,10 @@ public class FullscreenActivity extends AppCompatActivity {
      * while interacting with activity UI.
      */
     private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
+
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
+
             if (AUTO_HIDE) {
                 delayedHide(AUTO_HIDE_DELAY_MILLIS);
             }
@@ -320,7 +317,6 @@ public class FullscreenActivity extends AppCompatActivity {
         webView.setWebViewClient(new NocWebViewClient());
 
         // ---------------------------------------------------
-        // externalCMD(Constants.CMD_LOAD_SMART);
         externalCMD(Constants.CMD_LOAD_TIMER);
     }
 
@@ -364,7 +360,6 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-//        externalCMD(Constants.CMD_DEBUG_MODE);
         System.out.println("trace • onStart");
     }
 
@@ -374,9 +369,9 @@ public class FullscreenActivity extends AppCompatActivity {
         if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
-            return;
         }
-        new readXmlTask(FullscreenActivity.this).execute();
+        // performed by a separate request ==================
+        // new readXmlTask(FullscreenActivity.this).execute();
     }
 
 //    @Override
@@ -393,6 +388,11 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         System.out.println("trace • onDestroy");
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         super.onDestroy();
     }
 
@@ -519,8 +519,6 @@ public class FullscreenActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        // PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
-
         switch (request) {
             case JSConstants.EVT_MAIN_TEST:
                 callbackToUI(JSConstants.EVT_MAIN_TEST, createResponse(requestContent, null));
@@ -627,8 +625,8 @@ public class FullscreenActivity extends AppCompatActivity {
         private JSIn() {
         }
 
-        @JavascriptInterface
         // @SuppressLint("callNative")
+        @JavascriptInterface
         public final void callNative(int request, final String jsonString) {
             // HTML function send data to application -----------------------------
             serviceEvents(request, jsonString);
@@ -649,8 +647,6 @@ public class FullscreenActivity extends AppCompatActivity {
     // Read XML Weather
     // =========================================================
     private static class readXmlTask extends AsyncTask<Void, Void, String> {
-
-        // private class readFirmwareListTask extends AsyncTask<Void, Void, String> {
         // --------------------------------------------------
         private WeakReference<FullscreenActivity> activityReference;
 
@@ -659,21 +655,18 @@ public class FullscreenActivity extends AppCompatActivity {
             activityReference = new WeakReference<>(context);
         }
 
-        // ----------------------------------------------------
-        //preference = PreferenceManager.getDefaultSharedPreferences(MainActivity context);
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String resultXML = "";
-
         String list_url = mResources.getString(R.string.weather_xml);
 
+        // ----------------------------------------------------
         @Override
         protected String doInBackground(Void... params) {
             // System.out.println("trace | list_url : " + list_url);
             try {
 
                 URL url = new URL(list_url);
-
                 urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.connect();
@@ -691,7 +684,6 @@ public class FullscreenActivity extends AppCompatActivity {
                 resultXML = buffer.toString();
 
             } catch (Exception e) {
-
                 e.printStackTrace();
                 // System.out.println("Error load list_url : " + resultXML);
                 resultXML = "{weather:[]}";
@@ -700,12 +692,11 @@ public class FullscreenActivity extends AppCompatActivity {
             return resultXML;
         }
 
+        // ----------------------------------------------------
         @Override
-
         protected void onPostExecute(String strXML) {
             super.onPostExecute(strXML);
-//            System.out.println("trace | onPostExecute: " + strXML);
-//            JSONObject json;
+            // System.out.println("trace | onPostExecute: " + strXML);
             // get a reference to the activity if it is still there
             FullscreenActivity activity = activityReference.get();
             try {
@@ -714,12 +705,14 @@ public class FullscreenActivity extends AppCompatActivity {
                 System.out.println("Unexpected JSON exception" + e);
             }
             activity.callbackToUI(JSConstants.CMD_WEATHER_DATA, activity.createResponse(uiRequest, sendData));
-            // ----------------------------------------------------
+
         }
     }
 
-    // server -------------------------------------------
-    // ----------------------------------------------------
+
+    // =========================================
+    // Server
+    // =========================================
     class ServerThread implements Runnable {
 
         public void run() {
@@ -738,26 +731,6 @@ public class FullscreenActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-
-            // --------------------------------------------
-            if (b_exit) {
-                System.out.println("exit TCP Server... n");
-
-//                try {
-//                    client.close();
-//                } catch (IOException ex) {
-//                    System.out.println("client close exception...: " + ex.getMessage() + "n");
-//                }
-
-                try {
-                    serverSocket.close();
-                } catch (IOException ex) {
-                    System.out.println("socket close exception...: " + ex.getMessage() + "n");
-                }
-            }
-
-
-            // --------------------------------------------
         }
     }
 
@@ -772,8 +745,8 @@ public class FullscreenActivity extends AppCompatActivity {
         private InputStream in;
         // -----------------------------------
 
-        public CommunicationThread(Socket clientSocket) {
-            // private CommunicationThread(Socket clientSocket) {
+        // public CommunicationThread(Socket clientSocket) {
+        private CommunicationThread(Socket clientSocket) {
             this.clientSocket = clientSocket;
 
             try {
@@ -822,28 +795,23 @@ public class FullscreenActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-//            text.setText(text.getText().toString() + "Client Says: " + msg + "\n");
-            if (msg == null) {
-                // System.out.println("decryptCommand | data null");
-            } else {
+            if (msg != null) {
                 // String header = msg.substring(2, 27);
-                int body_length = msg.length() - 29;
+                // int body_length = msg.length() - 29;
                 // System.out.println("decryptCommand | body size: " + body_length);
                 // String body = (body_length > 0) ? msg.substring(27, msg.length() - 2) : "";
                 decryptCommand(msg);
                 //responseValue.setText(header);
             }
-            if (command == 0) {
-                // System.out.println("decryptCommand | data null");
-            } else {
+            if (command > 0) {
                 // System.out.println("decryptCommand | command : " + command);
                 externalCMD(command);
             }
-
         }
     }
-
     // ===================================
+
+
     private void decryptCommand(String data) {
         if (data == null) {
             System.out.println("decryptCommand | data null");
@@ -985,18 +953,10 @@ public class FullscreenActivity extends AppCompatActivity {
     }
     // ===================================
 
-//    private Boolean isSuccessfully(String response) {
-//        return true;
-//        //        return sendDataValue.getText().equals(response);
-//    }
-
-
     @Override
     public void onBackPressed() {
         if (back_pressed + 2000 > System.currentTimeMillis()) {
             super.onBackPressed();
-//            if (b_exit) super.onBackPressed();
-//            b_exit = true;
         } else {
             Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_exit),
                     Toast.LENGTH_SHORT).show();
@@ -1021,12 +981,6 @@ public class FullscreenActivity extends AppCompatActivity {
     public static Boolean detectApp(Context c, String packageName) {
         // if (Build.VERSION.SDK_INT < 5) return false;
         PackageManager pm = c.getPackageManager();
-//        String installer = pm.getInstallerPackageName(c.getPackageName());
-//        if (installer != null && installer.equals("com.jsc.smartpanel"))
-//            return true;
-//        if (Build.MODEL.equalsIgnoreCase("Kindle Fire"))
-//            return true;;
-
         try {
             if (pm.getPackageInfo(packageName, 0) != null)
                 return true;
