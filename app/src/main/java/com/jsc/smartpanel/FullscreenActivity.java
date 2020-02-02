@@ -15,6 +15,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
@@ -31,13 +32,10 @@ import org.json.JSONObject;
 import org.json.XML;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.URL;
 
 import jsinterface.JSConstants;
@@ -51,9 +49,7 @@ import utils.PackageCreator;
  */
 public class FullscreenActivity extends AppCompatActivity {
 
-    private ServerSocket serverSocket;
-    Handler updateConversationHandler;
-    Thread serverThread = null;
+    CommunicationServer communicationServer;
     private static long back_pressed;
     public static int port;
     private TextView responseHeader;
@@ -96,14 +92,10 @@ public class FullscreenActivity extends AppCompatActivity {
         @SuppressLint("InlinedApi")
         @Override
         public void run() {
-            webView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+            GlobalUtils.hideSystemUI(webView);
         }
     };
+
     private View mControlsView;
     private final Runnable mShowPart2Runnable = new Runnable() {
         @Override
@@ -143,14 +135,6 @@ public class FullscreenActivity extends AppCompatActivity {
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        View btnShow;
-        View btnApp1;
-        View btnApp2;
-        View btnApp3;
-        View btnApp4;
-        View btnApp5;
-        View btnApp6;
-        View btnApp7;
 //        View btnApp8;
         mResources = getResources();
 
@@ -179,8 +163,6 @@ public class FullscreenActivity extends AppCompatActivity {
         }
 
 
-//        mContext = getApplicationContext();
-        // rootApp = getResources().getString(R.string.root);
         // SCREEN_BRIGHT_WAKE_LOCK
         // PowerManager mPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -192,9 +174,7 @@ public class FullscreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fullscreen);
 
         // server tcpip ------------------------------
-        updateConversationHandler = new Handler();
-        serverThread = new Thread(new ServerThread());
-        serverThread.start();
+        communicationServer = new CommunicationServer(this);
 
         responseHeader = findViewById(R.id.resHeader);
         responseData = findViewById(R.id.resData);
@@ -203,110 +183,12 @@ public class FullscreenActivity extends AppCompatActivity {
 
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
-//        mContentView = findViewById(R.id.fullscreen_content);
-        btnShow = findViewById(R.id.btnShowCtrl);
-        // show settings --------------
-        btnShow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (splash.getVisibility() == View.VISIBLE) {
-                    splash.setVisibility(View.GONE);
-                } else {
-                    splash.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-        // run application --------------
-        splash = findViewById(R.id.splash);
-        btnApp1 = findViewById(R.id.icon1);
-        btnApp2 = findViewById(R.id.icon2);
-        btnApp3 = findViewById(R.id.icon3);
-        btnApp4 = findViewById(R.id.icon4);
-        btnApp5 = findViewById(R.id.icon5);
-        btnApp6 = findViewById(R.id.icon6);
-        btnApp7 = findViewById(R.id.icon7);
-//        btnApp8 = findViewById(R.id.icon8);
 
-        btnApp1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                externalCMD(Constants.CMD_RADIO);
-                splash.setVisibility(View.GONE);
-            }
-        });
-
-        btnApp2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                externalCMD(Constants.CMD_LOAD_SMART);
-            }
-        });
-
-        btnApp3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                externalCMD(Constants.CMD_LOAD_STATS);
-            }
-        });
-
-        btnApp4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                externalCMD(Constants.CMD_LOAD_TIMER);
-            }
-        });
-
-        btnApp5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                externalCMD(Constants.CMD_LOAD_WEATHER);
-            }
-        });
-
-        btnApp6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                externalCMD(Constants.CMD_SLING);
-                splash.setVisibility(View.GONE);
-            }
-        });
-
-        btnApp7.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Context context = getApplicationContext();
-                Intent configIntent = new Intent(context, SettingsActivity.class);
-                configIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(configIntent);
-            }
-        });
-
-//        btnApp8.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                loadHtml(getResources().getString(R.string.debug_js_interface));
-//                splash.setVisibility(View.GONE);
-//                // externalCMD(Constants.CMD_DEBUG_MODE);
-//                // splash.setVisibility(View.GONE);
-//            }
-//        });
-
-
-        //  end run application =======================================================
-
-
-        // Set up the user interaction to manually show or hide the system UI.
-//        mContentView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                toggle();
-//            }
-//        });
+        setupClickListeners();
 
         // ------------------------------------
         // WebView
         // ------------------------------------
-        // webView = (WebView) findViewById(R.id.web_view);
         webView = findViewById(R.id.web_view);
         webView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -318,6 +200,56 @@ public class FullscreenActivity extends AppCompatActivity {
 
         // ---------------------------------------------------
         externalCMD(Constants.CMD_LOAD_TIMER);
+    }
+
+    // set listeners for all buttons
+    private void setupClickListeners() {
+        splash = findViewById(R.id.splash);
+
+        // show settings --------------
+        findViewById(R.id.btnShowCtrl).setOnClickListener(view -> {
+            if (splash.getVisibility() == View.VISIBLE) {
+                splash.setVisibility(View.GONE);
+            } else {
+                splash.setVisibility(View.VISIBLE);
+            }
+        });
+
+        findViewById(R.id.icon1).setOnClickListener(view -> {
+            externalCMD(Constants.CMD_RADIO);
+            splash.setVisibility(View.GONE);
+        });
+
+        findViewById(R.id.icon2).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_SMART));
+
+        findViewById(R.id.icon3).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_STATS));
+
+        findViewById(R.id.icon4).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_TIMER));
+
+        findViewById(R.id.icon5).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                externalCMD(Constants.CMD_LOAD_WEATHER);
+            }
+        });
+
+        findViewById(R.id.icon6).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                externalCMD(Constants.CMD_SLING);
+                splash.setVisibility(View.GONE);
+            }
+        });
+
+        findViewById(R.id.icon7).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Context context = getApplicationContext();
+                Intent configIntent = new Intent(context, SettingsActivity.class);
+                configIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(configIntent);
+            }
+        });
     }
 
     // ==============================================
@@ -358,12 +290,6 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        System.out.println("trace • onStart");
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
@@ -374,25 +300,10 @@ public class FullscreenActivity extends AppCompatActivity {
         // new readXmlTask(FullscreenActivity.this).execute();
     }
 
-//    @Override
-//    protected void onStop() {
-//        super.onStop();
-//        System.out.println("trace • onStop");
-//        try {
-//            serverSocket.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     @Override
     protected void onDestroy() {
         System.out.println("trace • onDestroy");
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        communicationServer.stop();
         super.onDestroy();
     }
 
@@ -401,19 +312,6 @@ public class FullscreenActivity extends AppCompatActivity {
         System.out.println("trace • onLowMemory");
         super.onLowMemory();
     }
-
-//    @Override
-//    public void onConfigurationChanged(Configuration newConfig) {
-//        super.onConfigurationChanged(newConfig);
-//
-//        // Checks the orientation of the screen
-//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            Toast.makeText(this, "landscape", Toast.LENGTH_SHORT).show();
-//        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-//            Toast.makeText(this, "portrait", Toast.LENGTH_SHORT).show();
-//        }
-//    }
-
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -503,7 +401,7 @@ public class FullscreenActivity extends AppCompatActivity {
     // ===================================================
     // Client request events
     // ===================================================
-    public void serviceEvents(int request, final String jsonString) {
+    public void webViewEvents(int request, final String jsonString) {
         int external_cmd = 0;
         JSONObject requestContent = new JSONObject();
 
@@ -525,7 +423,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 break;
             case JSConstants.EVT_READY:
                 // AppUI = requestContent.optString("ui");
-                callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, initData()));
+                callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, initData(this)));
 //                if (AppUI.equalsIgnoreCase("project_weather")) {
 //                 } else {
 //                    callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, stateData()));
@@ -581,22 +479,22 @@ public class FullscreenActivity extends AppCompatActivity {
         }
         System.out.println("trace   | external_cmd = " + external_cmd + " | jsonString:" + jsonString);
         if (external_cmd > 0) {
-            updateConversationHandler.post(new updateUIThread(external_cmd));
+            new Handler().post(new UpdateUIRunnable(external_cmd));
         }
     }
 
     // ----------------------------------------
-    public JSONObject initData() {
+    public static JSONObject initData(@NonNull Context context) {
         JSONObject obj = new JSONObject();
         try {
             obj.put("android_os", android.os.Build.VERSION.SDK_INT);
             obj.put("language", "en");
-            obj.put("phone_ui", !GlobalUtils.isTablet(getApplicationContext()));
+            obj.put("phone_ui", !GlobalUtils.isTablet(context));
             obj.put("android_app", true);
-            obj.put("node_url", preference.getString("ip_weather", getResources().getString(R.string.def_node_weather_url)));
-            obj.put("node_bathroom_url", preference.getString("ip_bathroom", getResources().getString(R.string.def_node_weather_url)));
-            obj.put("chip_weather", preference.getString("chip_weather", getResources().getString(R.string.def_node_weather_chip)));
-            obj.put("chip_bathroom", preference.getString("chip_bathroom", getResources().getString(R.string.def_node_bathroom_chip)));
+            obj.put("node_url", preference.getString("ip_weather", GlobalUtils.getString(context, R.string.def_node_weather_url)));
+            obj.put("node_bathroom_url", preference.getString("ip_bathroom", GlobalUtils.getString(context, R.string.def_node_weather_url)));
+            obj.put("chip_weather", preference.getString("chip_weather", GlobalUtils.getString(context, R.string.def_node_weather_chip)));
+            obj.put("chip_bathroom", preference.getString("chip_bathroom", GlobalUtils.getString(context, R.string.def_node_bathroom_chip)));
             obj.put("auto_start_night_mode", preference.getBoolean("sw_auto_start", false));
 
             // string to int ---------------------
@@ -613,7 +511,6 @@ public class FullscreenActivity extends AppCompatActivity {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        // System.out.println("trace initData : " + obj.toString());
         return obj;
     }
 
@@ -622,14 +519,11 @@ public class FullscreenActivity extends AppCompatActivity {
     // =========================================================
     private class JSIn {
 
-        private JSIn() {
-        }
-
         // @SuppressLint("callNative")
         @JavascriptInterface
         public final void callNative(int request, final String jsonString) {
             // HTML function send data to application -----------------------------
-            serviceEvents(request, jsonString);
+            webViewEvents(request, jsonString);
         }
     }
 
@@ -710,86 +604,20 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
 
-    // =========================================
-    // Server
-    // =========================================
-    class ServerThread implements Runnable {
-
-        public void run() {
-            Socket socket;
-            try {
-                serverSocket = new ServerSocket(8080);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    socket = serverSocket.accept();
-                    CommunicationThread commThread = new CommunicationThread(socket);
-                    new Thread(commThread).start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+    public void updateOnUIThread(String str) {
+        runOnUiThread(new UpdateUIRunnable(str));
     }
 
     // ----------------------------------------------------
-    class CommunicationThread implements Runnable {
-
-        Socket clientSocket;
-        // private BufferedReader input;
-        // -----------------------------------
-        /* создаем буфер для данных */
-        byte[] buffer;
-        private InputStream in;
-        // -----------------------------------
-
-        // public CommunicationThread(Socket clientSocket) {
-        private CommunicationThread(Socket clientSocket) {
-            this.clientSocket = clientSocket;
-
-            try {
-                this.buffer = new byte[16];
-                this.in = this.clientSocket.getInputStream();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void run() {
-
-            while (!Thread.currentThread().isInterrupted()) {
-
-                try {
-//                    String read = input.readLine();
-                    int countS = in.read(buffer, 0, buffer.length);
-                    if (countS > 0) {
-                        // decode data header, restore src CO and DB ----
-                        byte[] header;
-                        header = PackageCreator.decodePackage(PackageCreator.copyPartArray(buffer, 0, countS));
-                        String headerStr = PackageCreator.getHeaderStr(header);
-                        //System.out.println("========== TcpClient header length: " + header.length + " | headerStr : " + headerStr );
-                        updateConversationHandler.post(new updateUIThread(headerStr));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-    }
-
-    // ----------------------------------------------------
-    class updateUIThread implements Runnable {
+    class UpdateUIRunnable implements Runnable {
         private String msg;
         private int command;
 
-        private updateUIThread(String str) {
+        private UpdateUIRunnable(String str) {
             this.msg = str;
         }
 
-        private updateUIThread(int cmd) {
+        private UpdateUIRunnable(int cmd) {
             this.command = cmd;
         }
 
