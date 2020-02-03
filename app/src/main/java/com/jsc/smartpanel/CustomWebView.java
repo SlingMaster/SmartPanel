@@ -1,9 +1,8 @@
 /*
- * Copyright (c) 2020.
- * RF Controls
- * Design and Programming by Alex Dovby
+ * Copyright (c) 2020
+ * Jeneral Samopal Company
+ * Programming by Alex Uchitel
  */
-
 package com.jsc.smartpanel;
 
 import android.annotation.SuppressLint;
