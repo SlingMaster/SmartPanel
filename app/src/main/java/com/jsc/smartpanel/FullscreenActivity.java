@@ -15,6 +15,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -41,6 +42,7 @@ import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 import jsinterface.JSConstants;
 import jsinterface.JSOut;
@@ -65,6 +67,8 @@ public class FullscreenActivity extends AppCompatActivity {
     private static int cur_screen = 1;
     private static int lastCMD = 0;
     private static boolean sleep_mode = false;
+    private static String nextApp;
+    private static Boolean nextKill;
     WebView webView;
 
     // js interface ------------
@@ -78,7 +82,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
+        nextKill = false;
         super.onCreate(savedInstanceState);
         preference = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -99,6 +103,13 @@ public class FullscreenActivity extends AppCompatActivity {
                 System.out.println("trace | Host:" + host + " | path:" + path + " | param:" + param);
                 //Log.e("TAG", "fragment:" + fragment);
             }
+            // -------------------------------------
+            // "next app" --------------------------
+            nextApp = intent.getStringExtra("next_app");
+            // -------------------------------------
+            // "next kill --------------------------
+            nextKill = intent.getBooleanExtra("next_kill", false);
+            // -------------------------------------
         }
 
         // SCREEN_BRIGHT_WAKE_LOCK
@@ -215,6 +226,7 @@ public class FullscreenActivity extends AppCompatActivity {
                         public void run() {
                             // webView.setVisibility(View.VISIBLE);
                             splash.setVisibility(View.GONE);
+                            killAllProcess();
                         }
                     }, 500);
             // ==============================================
@@ -577,17 +589,16 @@ public class FullscreenActivity extends AppCompatActivity {
             }
             return;
         }
-        ActivityManager activityMgr = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
-        try {
-            if (lastCMD == Constants.CMD_RADIO) {
-                activityMgr.killBackgroundProcesses(getResources().getString(R.string.pkg_radio));
-            }
-            if (lastCMD == Constants.CMD_SLING) {
-                activityMgr.killBackgroundProcesses(getResources().getString(R.string.pkg_sling_player));
-            }
-        } catch (Exception e) {
-//            System.out.println(" trace | App not active");
-        }
+//        ActivityManager activityMgr = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+//        try {
+//            if (lastCMD == Constants.CMD_RADIO) {
+//                activityMgr.killBackgroundProcesses(getResources().getString(R.string.pkg_radio));
+//            }
+//            if (lastCMD == Constants.CMD_SLING) {
+//                activityMgr.killBackgroundProcesses(getResources().getString(R.string.pkg_sling_player));
+//            }
+//        } catch (Exception e) {
+//        }
         switch (cmd) {
             case Constants.CMD_RESTART:
                 lastCMD = cmd;
@@ -613,27 +624,45 @@ public class FullscreenActivity extends AppCompatActivity {
             // menu ======================
             case Constants.CMD_RADIO:
                 lastCMD = cmd;
+                nextKill = true;
                 if (detectApp(getApplicationContext(), getResources().getString(R.string.pkg_radio))) {
                     intent = new Intent();
                     intent.setComponent(new ComponentName(getResources().getString(R.string.pkg_radio),
                             getResources().getString(R.string.pkg_radio) + getResources().getString(R.string.app_entry)));
                     // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
-                } else
+                } else {
                     Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
+                }
                 break;
             case Constants.CMD_LOAD_SMART:
                 lastCMD = cmd;
-                loadHtml(root + getResources().getString(R.string.html_smarthome));
+                if (nextKill) {
+                    restartApp(root + getResources().getString(R.string.html_smarthome));
+                    nextKill = false;
+                } else {
+                    loadHtml(root + getResources().getString(R.string.html_smarthome));
+                }
                 break;
             case Constants.CMD_LOAD_STATS:
                 lastCMD = cmd;
-                loadHtml(root + getResources().getString(R.string.html_stats));
+                if (nextKill) {
+                    restartApp(root + getResources().getString(R.string.html_smarthome));
+
+                    nextKill = false;
+                } else {
+                    loadHtml(root + getResources().getString(R.string.html_stats));
+                }
                 break;
             // timer ---------------------
             case Constants.CMD_LOAD_TIMER:
                 lastCMD = cmd;
-                loadHtml(root + getResources().getString(R.string.html_timer));
+                if (nextKill) {
+                    restartApp(root + getResources().getString(R.string.html_timer));
+                    nextKill = false;
+                } else {
+                    loadHtml(root + getResources().getString(R.string.html_timer));
+                }
                 break;
             case Constants.CMD_TIMER_SWAP:
                 callbackToUI(JSConstants.CMD_SWAP, createResponse(null, null));
@@ -642,7 +671,12 @@ public class FullscreenActivity extends AppCompatActivity {
             // weather forecast ----------
             case Constants.CMD_LOAD_WEATHER:
                 lastCMD = cmd;
-                loadHtml(root + getResources().getString(R.string.html_weather));
+                if (nextKill) {
+                    restartApp(root + getResources().getString(R.string.html_weather));
+                    nextKill = false;
+                } else {
+                    loadHtml(root + getResources().getString(R.string.html_weather));
+                }
                 break;
             case Constants.CMD_WEATHER_FORECAST:
                 callbackToUI(JSConstants.CMD_SWAP, createResponse(null, null));
@@ -654,6 +688,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
             case Constants.CMD_SLING:
                 lastCMD = cmd;
+                nextKill = true;
                 if (detectApp(getApplicationContext(), getResources().getString(R.string.pkg_sling_player))) {
                     intent = new Intent();
                     intent.setComponent(new ComponentName(getResources().getString(R.string.pkg_sling_player),
@@ -666,6 +701,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
             case Constants.CMD_WIFI_SCANNER:
                 lastCMD = cmd;
+                nextKill = true;
                 if (detectApp(getApplicationContext(), getResources().getString(R.string.pkg_wifi_scanner))) {
                     intent = new Intent();
                     intent.setComponent(new ComponentName(getResources().getString(R.string.pkg_wifi_scanner),
@@ -708,10 +744,25 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     // ===================================
+    private void restartApp(String nextApp) {
+        // перезагрузка приложением самого себя ----------------
+        Context context = getApplicationContext();
+        Intent mStartActivity = new Intent(context, FullscreenActivity.class);
+        mStartActivity.putExtra("next_app", nextApp);
+        mStartActivity.putExtra("next_kill", nextKill);
+        int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
+        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+        System.exit(0);
+    }
+
+    // ===================================
     private void restartApp() {
         // перезагрузка приложением самого себя ----------------
         Context context = getApplicationContext();
         Intent mStartActivity = new Intent(context, FullscreenActivity.class);
+        mStartActivity.putExtra("kill_pkg", getResources().getString(R.string.pkg_radio));
         int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
         // int mPendingIntentId = 123456;
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -731,5 +782,28 @@ public class FullscreenActivity extends AppCompatActivity {
             System.out.println(" trace | App " + packageName + " not instaled");
         }
         return false;
+    }
+
+    // ===================================
+    private void killAllProcess() {
+        List<ApplicationInfo> packages;
+        PackageManager pm;
+        pm = getPackageManager();
+        //get a list of installed apps.
+        packages = pm.getInstalledApplications(0);
+
+        ActivityManager mActivityManager = (ActivityManager) FullscreenActivity.this.getSystemService(Context.ACTIVITY_SERVICE);
+        String myPackage = getApplicationContext().getPackageName();
+
+        for (ApplicationInfo packageInfo : packages) {
+            if ((packageInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 1) {
+                continue;
+            }
+            if (packageInfo.packageName.equals(myPackage)) {
+                continue;
+            }
+            mActivityManager.killBackgroundProcesses(packageInfo.packageName);
+        }
+        nextKill = false;
     }
 }
