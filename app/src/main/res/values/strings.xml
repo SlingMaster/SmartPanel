@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Smart Panel</string>
-    <string name="is_desc">icon</string>
+    <string name="ic_desc">icon</string>
     <string name="empty"> </string>
     <string name="msg_not_wifi_connection">No WiFi connection</string>
     <string name="weather_xml">http://informer.gismeteo.ru/xml/34300_1.xml</string>
@@ -13,6 +13,8 @@
     <string name="pkg_radio">air.InternetRadio</string>
     <string name="pkg_sling_player">air.SlingPlayerTablet3.A4</string>
     <string name="app_entry">.AppEntry</string>
+    <string name="pkg_wifi_scanner">com.pinapps.amped</string>
+    <string name="scanner_activity1">.Act03ChannelGraph</string>
 
     <string name="pref_title_general">NODE MCU CONTROLERS DATA</string>
     <!--    JSC-ESP8266-SH | Bathroom |	Channel ID:	135846 -->

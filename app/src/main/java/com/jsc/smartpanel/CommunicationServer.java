@@ -1,6 +1,7 @@
 /*
- * Copyright (c) 2020.
- * RF Controls
+ * Copyright (c) 2020
+ * Jeneral Samopal Company
+ * Programming by Alex Uchitel
  * Design and Programming by Alex Dovby
  */
 
@@ -8,16 +9,14 @@ package com.jsc.smartpanel;
 
 import android.support.annotation.NonNull;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import utils.PackageCreator;
-
 class CommunicationServer {
     private FullscreenActivity activity;
-
     private ServerSocket serverSocket;
     private Thread serverThread;
 
@@ -53,44 +52,29 @@ class CommunicationServer {
 
     // ----------------------------------------------------
     class CommunicationThread implements Runnable {
-
         Socket clientSocket;
-        // private BufferedReader input;
-        // -----------------------------------
-        /* создаем буфер для данных */
-        byte[] buffer;
-        private InputStream in;
-        // -----------------------------------
+        private BufferedReader in;
 
-        // public CommunicationThread(Socket clientSocket) {
+        // ===================================
         private CommunicationThread(Socket clientSocket) {
             this.clientSocket = clientSocket;
 
             try {
-                this.buffer = new byte[16];
-                this.in = this.clientSocket.getInputStream();
+                in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
+        // ===================================
         public void run() {
 
             while (!Thread.currentThread().isInterrupted()) {
-
                 try {
-//                    String read = input.readLine();
-                    int countS = in.read(buffer, 0, buffer.length);
-                    if (countS > 0) {
-                        // decode data header, restore src CO and DB ----
-                        byte[] header;
-                        header = PackageCreator.decodePackage(PackageCreator.copyPartArray(buffer, 0, countS));
-                        String headerStr = PackageCreator.getHeaderStr(header);
-                        //System.out.println("========== TcpClient header length: " + header.length + " | headerStr : " + headerStr );
+                    String readData = in.readLine();
+                    if (!readData.equals("")) {
                         if (activity != null) {
-                            activity.updateOnUIThread(headerStr);
-//                            clientSocket.close();
-//                            Thread.currentThread().interrupt();
+                            activity.updateOnUIThread(readData);
                         }
                     }
                 } catch (Exception e) {

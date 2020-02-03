@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2019.
+ * Jeneral Samopal Company
+ * Programming by Alex Uchitel
+ * Design and Programming by Alex Dovby
+ */
+
 package com.jsc.smartpanel;
 
 import android.annotation.SuppressLint;
@@ -38,7 +45,6 @@ import java.net.URL;
 import jsinterface.JSConstants;
 import jsinterface.JSOut;
 import utils.GlobalUtils;
-import utils.PackageCreator;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -158,13 +164,15 @@ public class FullscreenActivity extends AppCompatActivity {
 
         findViewById(R.id.icon5).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_WEATHER));
 
-        findViewById(R.id.icon6).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                externalCMD(Constants.CMD_SLING);
-                splash.setVisibility(View.GONE);
-            }
+        findViewById(R.id.icon6).setOnClickListener(view -> {
+            externalCMD(Constants.CMD_SLING);
+            splash.setVisibility(View.GONE);
         });
+        findViewById(R.id.icon8).setOnClickListener(view -> {
+            externalCMD(Constants.CMD_WIFI_SCANNER);
+            splash.setVisibility(View.GONE);
+        });
+
 
         findViewById(R.id.icon7).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -492,11 +500,11 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ----------------------------------------------------
     class UpdateUIRunnable implements Runnable {
-        private String msg;
+        private String jsonStr;
         private int command;
 
         private UpdateUIRunnable(String str) {
-            this.msg = str;
+            this.jsonStr = str;
         }
 
         private UpdateUIRunnable(int cmd) {
@@ -505,13 +513,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            if (msg != null) {
-                // String header = msg.substring(2, 27);
-                // int body_length = msg.length() - 29;
-                // System.out.println("decryptCommand | body size: " + body_length);
-                // String body = (body_length > 0) ? msg.substring(27, msg.length() - 2) : "";
-                decryptCommand(msg);
-                //responseValue.setText(header);
+            if (jsonStr != null) {
+                decryptCommand(jsonStr);
             }
             if (command > 0) {
                 // System.out.println("decryptCommand | command : " + command);
@@ -519,27 +522,45 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         }
     }
+
     // ===================================
-
-
     private void decryptCommand(String data) {
+        // пока здесь куча отладочного кода -----------------------
+        // почищу когда закончу отладку передачи комманд и значений
+
+        String cmdStr;
+        int cmd;
+        Boolean flag;
         if (data == null) {
             System.out.println("decryptCommand | data null");
             return;
         }
-        String header = data.substring(2, 27);
-        int body_length = data.length() - 29;
-        // System.out.println("decryptCommand | body size: " + body_length);
-        String body = (body_length > 0) ? data.substring(27, data.length() - 2) : "";
 
-//        System.out.println("decryptCommand | header:" + header + " | size: " + data.length());
-//        System.out.println("decryptCommand | data:" + data.substring(2, 27) + " | size: " + data.length());
-//        System.out.println("decryptCommand | body:" + convertHexToString(body.replaceAll(" ", "")) + " | size: " + body_length);
-//
-        responseHeader.setText(header);
-        responseData.setText(body);
-        int cmd = PackageCreator.getCommandID(header);
-        externalCMD(cmd);
+        cmdStr = "00";
+        try {
+            JSONObject clientRequest = new JSONObject(data);
+            if (clientRequest.has("cmd")) {
+                cmdStr = clientRequest.optString("cmd");
+                cmd = Integer.parseInt(cmdStr, 16);
+                if (clientRequest.has("val")) {
+                    flag = clientRequest.optBoolean("val");
+                    externalCMD(cmd, flag);
+                } else {
+                    externalCMD(cmd);
+                }
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        // responseData.setText("JSON : " + data + " | DEC • " + String.valueOf(cmd));
+        responseHeader.setText(" 00 " + cmdStr + " 00 00 00 00 00 00");
+
+    }
+
+    // ===================================
+    private void externalCMD(int cmd, Boolean val) {
+        responseData.setText("CMD | DEC • " + String.valueOf(cmd) + " | " + Boolean.toString(val));
     }
 
     // ===================================
@@ -637,6 +658,18 @@ public class FullscreenActivity extends AppCompatActivity {
                     intent = new Intent();
                     intent.setComponent(new ComponentName(getResources().getString(R.string.pkg_sling_player),
                             getResources().getString(R.string.pkg_sling_player) + getResources().getString(R.string.app_entry)));
+                    startActivity(intent);
+                } else
+                    Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
+                break;
+            // --------------------------
+
+            case Constants.CMD_WIFI_SCANNER:
+                lastCMD = cmd;
+                if (detectApp(getApplicationContext(), getResources().getString(R.string.pkg_wifi_scanner))) {
+                    intent = new Intent();
+                    intent.setComponent(new ComponentName(getResources().getString(R.string.pkg_wifi_scanner),
+                            getResources().getString(R.string.pkg_wifi_scanner) + getResources().getString(R.string.scanner_activity1)));
                     startActivity(intent);
                 } else
                     Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
