@@ -41,7 +41,7 @@
             android:layout_marginTop="@dimen/splash_margin"
             android:layout_marginBottom="@dimen/webview_top"
             android:adjustViewBounds="false"
-            android:contentDescription="@string/about_app_title"
+            android:contentDescription="@string/empty"
             android:cropToPadding="false"
             android:scaleType="centerInside"
             app:srcCompat="@drawable/splash" />
@@ -62,7 +62,7 @@
                 android:layout_height="@dimen/ic_launcher_size"
                 android:layout_gravity="top"
                 android:layout_weight="1"
-                android:contentDescription="@string/is_desc"
+                android:contentDescription="@string/ic_desc"
                 android:scaleType="centerInside"
                 app:srcCompat="@drawable/btn_radio" />
 
@@ -72,7 +72,7 @@
                 android:layout_height="@dimen/ic_launcher_size"
                 android:layout_gravity="top"
                 android:layout_weight="1"
-                android:contentDescription="@string/is_desc"
+                android:contentDescription="@string/ic_desc"
                 android:scaleType="centerInside"
                 app:srcCompat="@drawable/btn_smart" />
 
@@ -82,7 +82,7 @@
                 android:layout_height="@dimen/ic_launcher_size"
                 android:layout_gravity="top"
                 android:layout_weight="1"
-                android:contentDescription="@string/is_desc"
+                android:contentDescription="@string/ic_desc"
                 android:foregroundGravity="center"
                 android:scaleType="centerInside"
                 app:srcCompat="@drawable/btn_stats" />
@@ -93,7 +93,7 @@
                 android:layout_height="@dimen/ic_launcher_size"
                 android:layout_gravity="top"
                 android:layout_weight="1"
-                android:contentDescription="@string/is_desc"
+                android:contentDescription="@string/ic_desc"
                 android:foregroundGravity="center"
                 android:scaleType="centerInside"
                 app:srcCompat="@drawable/btn_timer" />
@@ -104,7 +104,7 @@
                 android:layout_height="@dimen/ic_launcher_size"
                 android:layout_gravity="top"
                 android:layout_weight="1"
-                android:contentDescription="@string/is_desc"
+                android:contentDescription="@string/ic_desc"
                 android:fadingEdge="horizontal"
                 android:scaleType="centerInside"
                 app:srcCompat="@drawable/btn_weather" />
@@ -115,21 +115,21 @@
                 android:layout_height="@dimen/ic_launcher_size"
                 android:layout_gravity="top"
                 android:layout_weight="1"
-                android:contentDescription="@string/is_desc"
+                android:contentDescription="@string/ic_desc"
                 android:fadingEdge="horizontal"
                 android:scaleType="centerInside"
                 app:srcCompat="@drawable/btn_sling" />
 
-            <!--            <ImageView-->
-            <!--                android:id="@+id/icon8"-->
-            <!--                android:layout_width="0dp"-->
-            <!--                android:layout_height="@dimen/ic_launcher_size"-->
-            <!--                android:layout_gravity="top"-->
-            <!--                android:layout_weight="1"-->
-            <!--                android:contentDescription="@string/is_desc"-->
-            <!--                android:fadingEdge="horizontal"-->
-            <!--                android:scaleType="centerInside"-->
-            <!--                app:srcCompat="@drawable/ic_debug" />-->
+            <ImageView
+                android:id="@+id/icon8"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/ic_launcher_size"
+                android:layout_gravity="top"
+                android:layout_weight="1"
+                android:contentDescription="@string/ic_desc"
+                android:fadingEdge="horizontal"
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/ic_debug" />
 
             <ImageView
                 android:id="@+id/icon7"
@@ -137,7 +137,7 @@
                 android:layout_height="@dimen/ic_launcher_size"
                 android:layout_gravity="top"
                 android:layout_weight="1"
-                android:contentDescription="@string/is_desc"
+                android:contentDescription="@string/ic_desc"
                 android:fadingEdge="horizontal"
                 android:scaleType="centerInside"
                 app:srcCompat="@drawable/btn_preset" />
@@ -153,7 +153,7 @@
         android:layout_height="@dimen/ic_launcher_size"
         android:layout_gravity="bottom"
         android:background="@android:color/black"
-        android:contentDescription="@string/is_desc"
+        android:contentDescription="@string/ic_desc"
         android:scaleType="center"
         app:srcCompat="@drawable/ic_more" />
 
