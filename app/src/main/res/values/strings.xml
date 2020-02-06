@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Smart Panel</string>
-    <string name="is_desc">icon</string>
+    <string name="ic_desc">icon</string>
     <string name="empty"> </string>
     <string name="msg_not_wifi_connection">No WiFi connection</string>
     <string name="weather_xml">http://informer.gismeteo.ru/xml/34300_1.xml</string>
@@ -13,6 +13,8 @@
     <string name="pkg_radio">air.InternetRadio</string>
     <string name="pkg_sling_player">air.SlingPlayerTablet3.A4</string>
     <string name="app_entry">.AppEntry</string>
+    <string name="pkg_wifi_scanner">com.pinapps.amped</string>
+    <string name="scanner_activity1">.Main</string>
 
     <string name="pref_title_general">NODE MCU CONTROLERS DATA</string>
     <!--    JSC-ESP8266-SH | Bathroom |	Channel ID:	135846 -->
@@ -22,14 +24,13 @@
     <string name="def_node_bathroom_url">http://192.168.1.77</string>
     <string name="def_node_bathroom_chip">2334292</string>
 
-
     <!--    HTML URL  ================== -->
     <string name="html_weather">weather.html</string>
     <string name="html_timer">timer.html</string>
     <string name="html_smarthome">smarthome.html</string>
     <string name="html_stats">smarthome/statistic.html</string>
-   <!--     debug url ================== -->
 
+   <!--     debug url ================== -->
     <string name="debug_js_interface">http://192.168.1.2/Projects/SmartPanel/HTML5UI/src/main.html</string>
     <string name="smart_home_url">http://192.168.1.2/SmartHome/smart_home.html</string>
     <string name="smart_home_url2">http://192.168.1.2/Projects/HTML5UI/src/main.html</string>

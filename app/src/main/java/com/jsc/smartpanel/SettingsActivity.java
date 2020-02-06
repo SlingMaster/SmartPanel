@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2019.
- * RF Controls
+ * Jeneral Samopal Company
  * Design and Programming by Alex Dovby
  */
 
