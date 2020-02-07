@@ -8,8 +8,12 @@
     <string name="root">file:///android_asset/</string>
     <string name="def_port">8080</string>
     <string name="ip">IP • </string>
+
     <string name="msg_exit">Press once again to exit!</string>
+    <string name="msg_unsupported">Unsupported Command</string>
     <string name="msg_app_not_installed">Application not Installed</string>
+    <string name="pkg_app">com.jsc.smartpanel</string>
+    <string name="pkg_main">main</string>
     <string name="pkg_radio">air.InternetRadio</string>
     <string name="pkg_sling_player">air.SlingPlayerTablet3.A4</string>
     <string name="app_entry">.AppEntry</string>
