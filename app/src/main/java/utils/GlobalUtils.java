@@ -7,9 +7,11 @@
 
 package utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.view.View;
@@ -18,13 +20,14 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GlobalUtils {
     // private static final String hostExtractorRegexString = "(?:https?://)?(?:www\\.)?(.+\\.)(com|au\\.uk|co\\.in|be|in|uk|org\\.in|org|net|edu|gov|mil|ua)";
     //    private static final Pattern hostExtractorRegexPattern = Pattern.compile(hostExtractorRegexString);
     private static Boolean isTabletModeDetermined = false;
     private static Boolean isTabletMode = false;
-
+    private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
     // ========================================
     public static String getIP() {
         // Device ip address ----------
@@ -124,10 +127,14 @@ public class GlobalUtils {
         return false;
     }
 
+
+    // ===================================================
     public static String getString(@NonNull Context context, @StringRes int resource) {
         return context.getResources().getString(resource);
     }
 
+
+    // ===================================================
     public static void hideSystemUI(@NonNull View view) {
         view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -135,5 +142,23 @@ public class GlobalUtils {
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+    }
+
+    // ===================================================
+    @SuppressLint("NewApi")
+    public static int generateViewId() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            for (;;) {
+                final int result = sNextGeneratedId.get();
+                // aapt-generated IDs have the high byte nonzero; clamp to the range under that.
+                int newValue = result + 1;
+                if (newValue > 0x00FFFFFF)
+                    newValue = 1; // Roll over to 1, not 0.
+                if (sNextGeneratedId.compareAndSet(result, newValue))
+                    return result;
+            }
+        }
+        else
+            return View.generateViewId();
     }
 }
