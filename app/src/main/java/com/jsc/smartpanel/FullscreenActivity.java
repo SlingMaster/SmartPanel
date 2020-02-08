@@ -28,8 +28,6 @@ import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -51,22 +49,20 @@ import utils.GlobalUtils;
 public class FullscreenActivity extends AppCompatActivity {
 
     CommunicationServer communicationServer;
-    private static long back_pressed;
-    public static int port;
-    private TextView responseHeader;
-    private TextView responseData;
     public static SharedPreferences preference;
-
-    private static boolean Night = false;
-    private static boolean debugMode = false;
-    private static int cur_screen = 1;
-    private static int lastCMD = 0;
-    private static boolean sleep_mode = false;
-    private static String nextApp;
-    private static Boolean nextKill;
-    private static String currentApp;
-    FrameLayout mainLayer;
+    private View mControlsView;
     WebView webView;
+
+    private long back_pressed;
+    public int port;
+    private boolean Night = false;
+    private int cur_screen = 1;
+    private int lastCMD = 0;
+    // private boolean sleep_mode = false;
+    private String nextApp;
+    private Boolean nextKill;
+    private String currentApp;
+    private boolean mVisible;
 
     // js interface ------------
     protected JSOut jsOut;
@@ -74,8 +70,6 @@ public class FullscreenActivity extends AppCompatActivity {
     public static JSONObject sendData;
     // -------------------------
 
-    private View mControlsView;
-    private boolean mVisible;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,10 +117,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
         // server tcpip ------------------------------
         communicationServer = new CommunicationServer(this);
-
-        responseHeader = findViewById(R.id.resHeader);
-        responseData = findViewById(R.id.resData);
-
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
 
@@ -159,7 +149,7 @@ public class FullscreenActivity extends AppCompatActivity {
             Context context = getApplicationContext();
             Intent configIntent = new Intent(context, SettingsActivity.class);
             configIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(configIntent);
+            startActivity(configIntent);
         });
         // menu list applications ------------------------
         findViewById(R.id.icon1).setOnClickListener(view -> externalCMD(Constants.CMD_RADIO));
@@ -239,7 +229,7 @@ public class FullscreenActivity extends AppCompatActivity {
     @SuppressLint("addJavascriptInterface")
     // ----------------------------------------
     protected void loadHtml(String url) {
-        String root = preference.getBoolean("sw_debug_mode", false) || debugMode
+        String root = preference.getBoolean("sw_debug_mode", false)
                 ? getResources().getString(R.string.root_debug) :
                 getResources().getString(R.string.root);
         WebView webView = findViewById(R.id.web_view);
@@ -330,8 +320,9 @@ public class FullscreenActivity extends AppCompatActivity {
                 break;
             case JSConstants.EVT_BACK_LIGHT:
                 if (preference.getBoolean("sw_back_light", false)) {
-                    sleep_mode = requestContent.optBoolean("sleep_mode", false);
-                    setBackLight(sleep_mode);
+//                    sleep_mode = requestContent.optBoolean("sleep_mode", false);
+//                    setBackLight(sleep_mode);
+                    setBackLight(requestContent.optBoolean("sleep_mode", false));
                 }
                 break;
             case JSConstants.EVT_NIGHT_MODE:
@@ -538,26 +529,37 @@ public class FullscreenActivity extends AppCompatActivity {
             if (clientRequest.has("cmd")) {
                 cmdStr = clientRequest.optString("cmd");
                 cmd = Integer.parseInt(cmdStr, 16);
-                if (clientRequest.has("val")) {
-                    flag = clientRequest.optBoolean("val");
-                    externalCMD(cmd, flag);
+                if (clientRequest.has("json")) {
+                    JSONObject json = clientRequest.optJSONObject("json");
+                    // Toast.makeText(this, "Transmitted External Command • $" + cmdStr + " | jsonStr • " + json.toString(), Toast.LENGTH_SHORT).show();
+                    externalCMD(cmd, json);
                 } else {
                     externalCMD(cmd);
                 }
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        // responseData.setText("JSON : " + data + " | DEC • " + String.valueOf(cmd));
-        responseHeader.setText(" 00 " + cmdStr + " 00 00 00 00 00 00");
         // TODO debug must remove
-        Toast.makeText(getBaseContext(), "Transmitted External Command • " + cmdStr + " | DEC • " + String.valueOf(cmd), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), "Transmitted External Command • $" + cmdStr + " | DEC • " + String.valueOf(cmd), Toast.LENGTH_SHORT).show();
     }
 
     // ===================================
-    private void externalCMD(int cmd, Boolean val) {
-        responseData.setText("CMD | DEC • " + String.valueOf(cmd) + " | " + Boolean.toString(val));
+    private void externalCMD(int cmd, JSONObject json) {
+        // Toast.makeText(getBaseContext(), "Transmitted External Command  | DEC • " + String.valueOf(cmd) + " | " + json.toString(), Toast.LENGTH_SHORT).show();
+        switch (cmd) {
+            case Constants.CMD_BACK_LIGHT:
+                if (json.has("state")) {
+                    boolean state = json.optBoolean("state", true);
+                    setBackLight(state);
+                }
+                break;
+            case Constants.CMD_DEBUG_MODE:
+                break;
+            default:
+                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();
+                break;
+        }
     }
 
     // ===================================
@@ -573,19 +575,7 @@ public class FullscreenActivity extends AppCompatActivity {
             case Constants.CMD_BACK:
                 onBackPressed();
                 break;
-            case Constants.CMD_BACK_LIGHT:
-                sleep_mode = !sleep_mode;
-                setBackLight(sleep_mode);
-                break;
             case Constants.CMD_DEBUG_MODE:
-                View debugContainer = findViewById(R.id.debug_panel);
-                if (debugContainer.getVisibility() == View.VISIBLE) {
-                    debugContainer.setVisibility(View.GONE);
-                } else {
-                    debugContainer.setVisibility(View.VISIBLE);
-
-                }
-                debugMode = debugContainer.getVisibility() == View.VISIBLE;
                 break;
 
             // ===========================
@@ -665,7 +655,7 @@ public class FullscreenActivity extends AppCompatActivity {
     public void setBackLight(Boolean sleep_mode) {
         WindowManager.LayoutParams layout = getWindow().getAttributes();
         if (sleep_mode) {
-            layout.screenBrightness = 0.3F;
+            layout.screenBrightness = 0.2F;
         } else {
             layout.screenBrightness = 0.7F;
         }
@@ -762,6 +752,7 @@ public class FullscreenActivity extends AppCompatActivity {
         }
         nextKill = false;
         // TODO  debug must remove
-        Toast.makeText(getBaseContext(), "Killed All Background Process", Toast.LENGTH_SHORT).show();
+        // Toast.makeText(getBaseContext(), "Killed All Background Process", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Killed All Background Process", Toast.LENGTH_SHORT).show();
     }
 }
