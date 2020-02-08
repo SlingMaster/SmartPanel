@@ -7,6 +7,8 @@
 package com.jsc.smartpanel;
 // @SuppressWarnings("WeakerAccess")
 
+import java.lang.reflect.Array;
+
 public class Constants {
     static final int MAX_SCR = 2;
     // public static final int PERMISSION_REQUEST_CODE = 101;
@@ -32,6 +34,7 @@ public class Constants {
     // -------------------------------------------
     static final int CMD_SLING = 0x3C;
     static final int CMD_WIFI_SCANNER = 0x46;
+    static final String[] HTML_APPS = {"smarthome.html", "smarthome/statistic.html", "timer.html", "weather.html"};
+    static final String[] PACKAGES = {"com.jsc.smartpanel", "air.InternetRadio", "air.SlingPlayerTablet3.A4", "com.pinapps.amped"};
 }
-
 

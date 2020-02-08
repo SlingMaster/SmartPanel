@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019.
+ * Copyright (c) 2020.
  * Jeneral Samopal Company
  * Programming by Alex Uchitel
  * Design and Programming by Alex Dovby
@@ -8,15 +8,11 @@
 package com.jsc.smartpanel;
 
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -29,7 +25,6 @@ import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -42,35 +37,28 @@ import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
 
 import jsinterface.JSConstants;
 import jsinterface.JSOut;
 import utils.GlobalUtils;
-// import utils.PackageCreator;
+import utils.SysUtils;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
 public class FullscreenActivity extends AppCompatActivity {
 
     CommunicationServer communicationServer;
-    private static long back_pressed;
-    public static int port;
-    private TextView responseHeader;
-    private TextView responseData;
-    private View splash;
     public static SharedPreferences preference;
-
-    private static boolean Night = false;
-    private static boolean debugMode = false;
-    private static int cur_screen = 1;
-    private static int lastCMD = 0;
-    private static boolean sleep_mode = false;
-    private static String nextApp;
-    private static Boolean nextKill;
+    private View mControlsView;
     WebView webView;
+
+    private long back_pressed;
+    public int port;
+    private boolean Night = false;
+    private int cur_screen = 1;
+    private int lastCMD = 0;
+    private String nextApp;
+    private Boolean nextKill;
+    private String currentApp;
+    private boolean mVisible;
 
     // js interface ------------
     protected JSOut jsOut;
@@ -78,8 +66,6 @@ public class FullscreenActivity extends AppCompatActivity {
     public static JSONObject sendData;
     // -------------------------
 
-    private View mControlsView;
-    private boolean mVisible;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,28 +93,26 @@ public class FullscreenActivity extends AppCompatActivity {
             // -------------------------------------
             // "next app" --------------------------
             nextApp = intent.getStringExtra("next_app");
+            if (nextApp != null) {
+                // int ls = nextApp.length();
+                String ext = nextApp.substring(nextApp.length() - 5);
+                Toast.makeText(getBaseContext(), "Next App Ext : " + ext, Toast.LENGTH_SHORT).show();
+            } else {
+                // default timer.html -----------
+                nextApp = Constants.HTML_APPS[2];
+            }
             // -------------------------------------
             // "next kill --------------------------
             nextKill = intent.getBooleanExtra("next_kill", false);
             // -------------------------------------
         }
 
-        // SCREEN_BRIGHT_WAKE_LOCK
-        // PowerManager mPowerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        // SCREEN_BRIGHT_WAKE_LOCK =================
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-//        mWakeLock = mPowerManager.newWakeLock(mWakeLockState,
-//                "UMSE PowerTest");
-//        if (mWakeLock != null) {
-//            mWakeLock.acquire();
-//        }
         setContentView(R.layout.activity_fullscreen);
 
         // server tcpip ------------------------------
         communicationServer = new CommunicationServer(this);
-
-        responseHeader = findViewById(R.id.resHeader);
-        responseData = findViewById(R.id.resData);
-
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
 
@@ -138,100 +122,61 @@ public class FullscreenActivity extends AppCompatActivity {
         // WebView
         // ------------------------------------
         webView = findViewById(R.id.web_view);
-        webView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggle();
-            }
-        });
+        webView.setOnClickListener(view -> toggle());
         webView.setWebViewClient(new NocWebViewClient());
 
         // ---------------------------------------------------
         externalCMD(Constants.CMD_LOAD_TIMER);
     }
 
-    // set listeners for all buttons
+    // set listeners for all buttons -------------------
     private void setupClickListeners() {
-        splash = findViewById(R.id.splash);
-
-        // show settings --------------
+        // show splash activity ------------------------
         findViewById(R.id.btnShowCtrl).setOnClickListener(view -> {
+            View splash = findViewById(R.id.splash);
             if (splash.getVisibility() == View.VISIBLE) {
                 splash.setVisibility(View.GONE);
             } else {
                 splash.setVisibility(View.VISIBLE);
             }
         });
-
-        findViewById(R.id.icon1).setOnClickListener(view -> {
-            externalCMD(Constants.CMD_RADIO);
-            splash.setVisibility(View.GONE);
+        // show settings activity ------------------------
+        findViewById(R.id.icon7).setOnClickListener(view -> {
+            Context context = getApplicationContext();
+            Intent configIntent = new Intent(context, SettingsActivity.class);
+            configIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(configIntent);
         });
-
+        // menu list applications ------------------------
+        findViewById(R.id.icon1).setOnClickListener(view -> externalCMD(Constants.CMD_RADIO));
         findViewById(R.id.icon2).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_SMART));
-
         findViewById(R.id.icon3).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_STATS));
-
         findViewById(R.id.icon4).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_TIMER));
-
         findViewById(R.id.icon5).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_WEATHER));
-
-        findViewById(R.id.icon6).setOnClickListener(view -> {
-            externalCMD(Constants.CMD_SLING);
-            splash.setVisibility(View.GONE);
-        });
-        findViewById(R.id.icon8).setOnClickListener(view -> {
-            externalCMD(Constants.CMD_WIFI_SCANNER);
-            splash.setVisibility(View.GONE);
-        });
-
-
-        findViewById(R.id.icon7).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Context context = getApplicationContext();
-                Intent configIntent = new Intent(context, SettingsActivity.class);
-                configIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(configIntent);
-            }
-        });
+        findViewById(R.id.icon6).setOnClickListener(view -> externalCMD(Constants.CMD_SLING));
+        findViewById(R.id.icon8).setOnClickListener(view -> externalCMD(Constants.CMD_WIFI_SCANNER));
     }
 
     // ==============================================
     // Loading a page with a self-signed certificate
     // ==============================================
     private class NocWebViewClient extends WebViewClient {
+
         @Override
         public void onPageFinished(WebView view, String url) {
             System.out.println("[ trace  ] onPage Finished : " + url);
 
-            // progressBar.setVisibility(View.GONE);
-            // bugfix text web page -----------------
-//            if (err) {
-//                // webView.setBackgroundColor(0x66ffffff);
-//                webView.setBackgroundColor(Color.WHITE);
-//                webView.setBackgroundResource(R.drawable.gradient_splash);
-//                p.leftMargin = (int) getResources().getDimension(R.dimen.err_msg_margin);
-//                p.rightMargin = (int) getResources().getDimension(R.dimen.err_msg_margin);
-//                err = false;
-//            } else {
-//                webView.setBackgroundColor(Color.BLACK);
-//                p.leftMargin = 0;
-//                p.rightMargin = 0;
-//            }
-//            webView.setLayoutParams(p);
-
-            // ==============================================
+            // ----------------------------------------
             new android.os.Handler().postDelayed(
                     new Runnable() {
                         public void run() {
-                            // webView.setVisibility(View.VISIBLE);
-                            splash.setVisibility(View.GONE);
-                            killAllProcess();
+                            View splash = findViewById(R.id.splash);
+                            if (splash.getVisibility() == View.VISIBLE) {
+                                splash.setVisibility(View.GONE);
+                            }
+                            runKillAllProcess();
                         }
-                    }, 500);
-            // ==============================================
-
+                    }, 1000);
         }
     }
 
@@ -239,13 +184,20 @@ public class FullscreenActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         GlobalUtils.hideSystemUI(webView);
-
+        nextKill = false;
         if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
         }
         // performed by a separate request ==================
         // new ReadXmlTask(FullscreenActivity.this).execute();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // save state app -----------------
+        // outState.putDouble(BILL_TOTAL, currentBillTotal);
     }
 
     @Override
@@ -274,12 +226,15 @@ public class FullscreenActivity extends AppCompatActivity {
     @SuppressLint("addJavascriptInterface")
     // ----------------------------------------
     protected void loadHtml(String url) {
+        String root = preference.getBoolean("sw_debug_mode", false)
+                ? getResources().getString(R.string.root_debug) :
+                getResources().getString(R.string.root);
         WebView webView = findViewById(R.id.web_view);
         boolean clear_cache = preference.getBoolean("sw_clear_cache", false);
         if (clear_cache) {
             webView.clearCache(true);
         }
-        webView.loadUrl(url);
+        webView.loadUrl(root + url);
 
         // js interface --------------------------------------
         jsOut = new JSOut(webView);
@@ -302,7 +257,7 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     // ===================================================
-    // Client request events
+    // HTML APP request events
     // ===================================================
     public void webViewEvents(int request, final String jsonString) {
         int external_cmd = 0;
@@ -362,8 +317,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 break;
             case JSConstants.EVT_BACK_LIGHT:
                 if (preference.getBoolean("sw_back_light", false)) {
-                    sleep_mode = requestContent.optBoolean("sleep_mode", false);
-                    setBackLight(sleep_mode);
+                    SysUtils.setBackLight(this, requestContent.optBoolean("sleep_mode", false));
                 }
                 break;
             case JSConstants.EVT_NIGHT_MODE:
@@ -432,6 +386,16 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     // ----------------------------------------
+    // command only ---------------------------
+    protected void callbackToUI(int target) {
+        if (jsOut != null) {
+            jsOut.callJavaScript(target, createResponse(null, null));
+        } else {
+            System.out.println("trace | Error Missing JSInterface");
+        }
+    }
+
+    // ----------------------------------------
     protected void callbackToUI(int target, JSONObject json) {
         if (jsOut != null) {
             jsOut.callJavaScript(target, json);
@@ -444,21 +408,21 @@ public class FullscreenActivity extends AppCompatActivity {
     // Read XML Weather
     // =========================================================
     private static class ReadXmlTask extends AsyncTask<Void, Void, String> {
-        // --------------------------------------------------
         private WeakReference<FullscreenActivity> activityReference;
         private final String listUrl;
 
+        HttpURLConnection urlConnection;
+        BufferedReader reader;
+        String resultXML = "";
+
+        // ----------------------------
         // only retain a weak reference to the activity
         ReadXmlTask(FullscreenActivity activity, @NonNull String list_url) {
             activityReference = new WeakReference<>(activity);
             listUrl = list_url;
         }
 
-        HttpURLConnection urlConnection;
-        BufferedReader reader;
-        String resultXML = "";
-
-        // ----------------------------------------------------
+        // ----------------------------
         @Override
         protected String doInBackground(Void... params) {
             // System.out.println("trace | list_url : " + list_url);
@@ -490,7 +454,7 @@ public class FullscreenActivity extends AppCompatActivity {
             return resultXML;
         }
 
-        // ----------------------------------------------------
+        // ----------------------------
         @Override
         protected void onPostExecute(String strXML) {
             super.onPostExecute(strXML);
@@ -506,31 +470,36 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     }
 
-
+    // ===================================
     public void updateOnUIThread(String str) {
         runOnUiThread(new UpdateUIRunnable(str));
     }
 
-    // ----------------------------------------------------
+    // ===================================
     class UpdateUIRunnable implements Runnable {
         private String jsonStr;
         private int command;
 
+        // ----------------------------
         private UpdateUIRunnable(String str) {
             this.jsonStr = str;
         }
 
+        // ----------------------------
         private UpdateUIRunnable(int cmd) {
             this.command = cmd;
         }
 
+        // ----------------------------
         @Override
         public void run() {
             if (jsonStr != null) {
+                // Transmitted External Command  from Desktop Client
                 decryptCommand(jsonStr);
             }
             if (command > 0) {
-                // System.out.println("decryptCommand | command : " + command);
+                // Transmitted External Command  from Html Application
+                System.out.println("trace | html Application command : " + command);
                 externalCMD(command);
             }
         }
@@ -538,217 +507,181 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     private void decryptCommand(String data) {
-        // пока здесь куча отладочного кода -----------------------
-        // почищу когда закончу отладку передачи комманд и значений
-
-        String cmdStr;
-        int cmd;
-        Boolean flag;
+        int cmd = 0;
         if (data == null) {
             System.out.println("decryptCommand | data null");
             return;
         }
 
-        cmdStr = "00";
         try {
             JSONObject clientRequest = new JSONObject(data);
             if (clientRequest.has("cmd")) {
-                cmdStr = clientRequest.optString("cmd");
-                cmd = Integer.parseInt(cmdStr, 16);
-                if (clientRequest.has("val")) {
-                    flag = clientRequest.optBoolean("val");
-                    externalCMD(cmd, flag);
+                cmd = Integer.parseInt(clientRequest.optString("cmd", "0"), 16);
+                if (clientRequest.has("json")) {
+                    JSONObject json = clientRequest.optJSONObject("json");
+                    externalCMD(cmd, json);
                 } else {
                     externalCMD(cmd);
                 }
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        // responseData.setText("JSON : " + data + " | DEC • " + String.valueOf(cmd));
-        responseHeader.setText(" 00 " + cmdStr + " 00 00 00 00 00 00");
-        // int cmd = PackageCreator.getCommandID(header);
-        // externalCMD(cmd);
-
     }
 
     // ===================================
-    private void externalCMD(int cmd, Boolean val) {
-        responseData.setText("CMD | DEC • " + String.valueOf(cmd) + " | " + Boolean.toString(val));
+    private void externalCMD(int cmd, JSONObject json) {
+        Toast.makeText(getBaseContext(), "Transmitted External Command  | DEC • " + String.valueOf(cmd) + " | " + json.toString(), Toast.LENGTH_SHORT).show();
+        switch (cmd) {
+            case Constants.CMD_BACK_LIGHT:
+                if (json.has("state")) {
+                    SysUtils.setBackLight(this, json.optBoolean("state", true));
+                }
+                break;
+            case Constants.CMD_DEBUG_MODE:
+                break;
+            default:
+                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();
+                break;
+        }
     }
 
     // ===================================
     private void externalCMD(int cmd) {
-        System.out.println(" trace | external CMD : " + cmd);
-        Intent intent;
-        String root = preference.getBoolean("sw_debug_mode", false) || debugMode
-                ? getResources().getString(R.string.root_debug) :
-                getResources().getString(R.string.root);
-        // responseData.setText(Integer.toHexString(cmd));
+        // TODO debug must remove
+        Toast.makeText(getBaseContext(), "Transmitted External Command • $" + String.format("%X", cmd) + " | DEC • " + String.valueOf(cmd), Toast.LENGTH_SHORT).show();
+
         if (cmd == lastCMD) {
-            if (splash.getVisibility() == View.VISIBLE) {
-                splash.setVisibility(View.GONE);
-            }
             return;
         }
-//        ActivityManager activityMgr = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
-//        try {
-//            if (lastCMD == Constants.CMD_RADIO) {
-//                activityMgr.killBackgroundProcesses(getResources().getString(R.string.pkg_radio));
-//            }
-//            if (lastCMD == Constants.CMD_SLING) {
-//                activityMgr.killBackgroundProcesses(getResources().getString(R.string.pkg_sling_player));
-//            }
-//        } catch (Exception e) {
-//        }
         switch (cmd) {
             case Constants.CMD_RESTART:
                 lastCMD = cmd;
-                restartApp();
+                SysUtils.restartApp(this);
                 break;
             case Constants.CMD_BACK:
                 onBackPressed();
                 break;
-            case Constants.CMD_BACK_LIGHT:
-                sleep_mode = !sleep_mode;
-                setBackLight(sleep_mode);
-                break;
             case Constants.CMD_DEBUG_MODE:
-                View debugContainer = findViewById(R.id.debug_panel);
-                if (debugContainer.getVisibility() == View.VISIBLE) {
-                    debugContainer.setVisibility(View.GONE);
-                } else {
-                    debugContainer.setVisibility(View.VISIBLE);
-
-                }
-                debugMode = debugContainer.getVisibility() == View.VISIBLE;
                 break;
-            // menu ======================
+
+            // ===========================
+            // Menu ======================
+            // ===========================
             case Constants.CMD_RADIO:
-                lastCMD = cmd;
-                nextKill = true;
-                if (detectApp(getApplicationContext(), getResources().getString(R.string.pkg_radio))) {
-                    intent = new Intent();
-                    intent.setComponent(new ComponentName(getResources().getString(R.string.pkg_radio),
-                            getResources().getString(R.string.pkg_radio) + getResources().getString(R.string.app_entry)));
-                    // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
-                }
+                runExternalApplication(1, cmd);
                 break;
             case Constants.CMD_LOAD_SMART:
-                lastCMD = cmd;
-                if (nextKill) {
-                    restartApp(root + getResources().getString(R.string.html_smarthome));
-                    nextKill = false;
-                } else {
-                    loadHtml(root + getResources().getString(R.string.html_smarthome));
-                }
+                runApplication(0, cmd);
                 break;
             case Constants.CMD_LOAD_STATS:
-                lastCMD = cmd;
-                if (nextKill) {
-                    restartApp(root + getResources().getString(R.string.html_smarthome));
-
-                    nextKill = false;
-                } else {
-                    loadHtml(root + getResources().getString(R.string.html_stats));
-                }
+                runApplication(1, cmd);
                 break;
             // timer ---------------------
             case Constants.CMD_LOAD_TIMER:
-                lastCMD = cmd;
-                if (nextKill) {
-                    restartApp(root + getResources().getString(R.string.html_timer));
-                    nextKill = false;
-                } else {
-                    loadHtml(root + getResources().getString(R.string.html_timer));
-                }
+                runApplication(2, cmd);
                 break;
             case Constants.CMD_TIMER_SWAP:
-                callbackToUI(JSConstants.CMD_SWAP, createResponse(null, null));
+                callbackToUI(JSConstants.CMD_SWAP);
                 break;
 
             // weather forecast ----------
             case Constants.CMD_LOAD_WEATHER:
-                lastCMD = cmd;
-                if (nextKill) {
-                    restartApp(root + getResources().getString(R.string.html_weather));
-                    nextKill = false;
-                } else {
-                    loadHtml(root + getResources().getString(R.string.html_weather));
-                }
+                runApplication(3, cmd);
                 break;
             case Constants.CMD_WEATHER_FORECAST:
-                callbackToUI(JSConstants.CMD_SWAP, createResponse(null, null));
+                callbackToUI(JSConstants.CMD_SWAP);
                 break;
             case Constants.CMD_WEATHER_MAGIC:
-                callbackToUI(JSConstants.CMD_SEASON_MAGIC, createResponse(null, null));
+                callbackToUI(JSConstants.CMD_SEASON_MAGIC);
                 break;
             // --------------------------
 
             case Constants.CMD_SLING:
-                lastCMD = cmd;
-                nextKill = true;
-                if (detectApp(getApplicationContext(), getResources().getString(R.string.pkg_sling_player))) {
-                    intent = new Intent();
-                    intent.setComponent(new ComponentName(getResources().getString(R.string.pkg_sling_player),
-                            getResources().getString(R.string.pkg_sling_player) + getResources().getString(R.string.app_entry)));
-                    startActivity(intent);
-                } else
-                    Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
+                runExternalApplication(2, cmd);
                 break;
             // --------------------------
 
             case Constants.CMD_WIFI_SCANNER:
-                lastCMD = cmd;
-                nextKill = true;
-                if (detectApp(getApplicationContext(), getResources().getString(R.string.pkg_wifi_scanner))) {
-                    intent = new Intent();
-                    intent.setComponent(new ComponentName(getResources().getString(R.string.pkg_wifi_scanner),
-                            getResources().getString(R.string.pkg_wifi_scanner) + getResources().getString(R.string.scanner_activity1)));
-                    startActivity(intent);
-                } else
-                    Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
+                runExternalApplication(3, cmd);
                 break;
             // ===========================
             default:
-//                responseData.setText(getResources().getString(R.string.msg_not_support_cmd) + " | " + body);
-//                responseData.setText(String.format(getResources().getString(R.string.msg_not_support_cmd) + "%d", String.valueOf(cmd)));
-//                responseData.setText(getResources().getString(R.string.msg_not_support_cmd));
+                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();
                 break;
         }
     }
 
     // ===================================
-    public void setBackLight(Boolean sleep_mode) {
-        WindowManager.LayoutParams layout = getWindow().getAttributes();
-        if (sleep_mode) {
-            layout.screenBrightness = 0.3F;
+    private void runApplication(int app_idx, int cmd) {
+        lastCMD = cmd;
+        currentApp = Constants.HTML_APPS[app_idx];
+        if (nextKill) {
+            // restartApp(Constants.HTML_APPS[app_idx]);
+            SysUtils.restartApp(this, Constants.HTML_APPS[app_idx], true);
+            nextKill = false;
         } else {
-            layout.screenBrightness = 0.7F;
+            loadHtml(Constants.HTML_APPS[app_idx]);
         }
-        System.out.println("[ trace  ] setBackLight " + layout.screenBrightness);
-        getWindow().setAttributes(layout);
     }
-    // ===================================
 
+    // ===================================
+    private void runExternalApplication(int app_idx, int cmd) {
+        Intent intent = getPackageManager().getLaunchIntentForPackage(Constants.PACKAGES[app_idx]);
+        if (intent != null) {
+            nextKill = true;
+            lastCMD = cmd;
+            currentApp = Constants.PACKAGES[app_idx];
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else {
+            Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // ===================================
     @Override
     public void onBackPressed() {
         if (back_pressed + 2000 > System.currentTimeMillis()) {
             super.onBackPressed();
         } else {
-            Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_exit),
-                    Toast.LENGTH_SHORT).show();
+            System.out.println(" trace | App " + currentApp.substring(nextApp.length() - 5));
+            // main application ------------------
+            if (currentApp.substring(nextApp.length() - 5).equals(".html")) {
+                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_exit),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getBaseContext(), "I think about it",
+                        Toast.LENGTH_SHORT).show();
+                // backPrevApp(currentApp);
+                // backMain();
+            }
         }
         back_pressed = System.currentTimeMillis();
     }
 
+    private void backMain() {
+        Intent intent = getPackageManager().getLaunchIntentForPackage(Constants.PACKAGES[0]);
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            // Bundle is optional --------------
+//            Bundle bundle = new Bundle();
+//            bundle.putInt("lastCMD", lastCMD);
+//            intent.putExtras(bundle);
+            //  end Bundle ---------------------
+            startActivity(intent);
+            View splash = findViewById(R.id.splash);
+            if (splash.getVisibility() == View.GONE) {
+                splash.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
     // ===================================
     private void restartApp(String nextApp) {
-        // перезагрузка приложением самого себя ----------------
+        // reboot main application & load next app
         Context context = getApplicationContext();
         Intent mStartActivity = new Intent(context, FullscreenActivity.class);
         mStartActivity.putExtra("next_app", nextApp);
@@ -761,52 +694,8 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     // ===================================
-    private void restartApp() {
-        // перезагрузка приложением самого себя ----------------
-        Context context = getApplicationContext();
-        Intent mStartActivity = new Intent(context, FullscreenActivity.class);
-        mStartActivity.putExtra("kill_pkg", getResources().getString(R.string.pkg_radio));
-        int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
-        // int mPendingIntentId = 123456;
-        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-        System.exit(0);
-    }
-
-    // ===================================
-    public static Boolean detectApp(Context c, String packageName) {
-        // if (Build.VERSION.SDK_INT < 5) return false;
-        PackageManager pm = c.getPackageManager();
-        try {
-            if (pm.getPackageInfo(packageName, 0) != null)
-                return true;
-        } catch (PackageManager.NameNotFoundException e) {
-            System.out.println(" trace | App " + packageName + " not instaled");
-        }
-        return false;
-    }
-
-    // ===================================
-    private void killAllProcess() {
-        List<ApplicationInfo> packages;
-        PackageManager pm;
-        pm = getPackageManager();
-        //get a list of installed apps.
-        packages = pm.getInstalledApplications(0);
-
-        ActivityManager mActivityManager = (ActivityManager) FullscreenActivity.this.getSystemService(Context.ACTIVITY_SERVICE);
-        String myPackage = getApplicationContext().getPackageName();
-
-        for (ApplicationInfo packageInfo : packages) {
-            if ((packageInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 1) {
-                continue;
-            }
-            if (packageInfo.packageName.equals(myPackage)) {
-                continue;
-            }
-            mActivityManager.killBackgroundProcesses(packageInfo.packageName);
-        }
-        nextKill = false;
+    private void runKillAllProcess() {
+        nextKill = !SysUtils.killAllProcess(this);
+        // all processes are already killed ---------------
     }
 }
