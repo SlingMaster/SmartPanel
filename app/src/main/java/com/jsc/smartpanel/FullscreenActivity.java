@@ -8,14 +8,11 @@
 package com.jsc.smartpanel;
 
 import android.annotation.SuppressLint;
-import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -40,11 +37,11 @@ import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
 
 import jsinterface.JSConstants;
 import jsinterface.JSOut;
 import utils.GlobalUtils;
+import utils.SysUtils;
 
 public class FullscreenActivity extends AppCompatActivity {
 
@@ -58,7 +55,6 @@ public class FullscreenActivity extends AppCompatActivity {
     private boolean Night = false;
     private int cur_screen = 1;
     private int lastCMD = 0;
-    // private boolean sleep_mode = false;
     private String nextApp;
     private Boolean nextKill;
     private String currentApp;
@@ -165,6 +161,7 @@ public class FullscreenActivity extends AppCompatActivity {
     // Loading a page with a self-signed certificate
     // ==============================================
     private class NocWebViewClient extends WebViewClient {
+
         @Override
         public void onPageFinished(WebView view, String url) {
             System.out.println("[ trace  ] onPage Finished : " + url);
@@ -177,7 +174,7 @@ public class FullscreenActivity extends AppCompatActivity {
                             if (splash.getVisibility() == View.VISIBLE) {
                                 splash.setVisibility(View.GONE);
                             }
-                            killAllProcess();
+                            runKillAllProcess();
                         }
                     }, 1000);
         }
@@ -260,7 +257,7 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     // ===================================================
-    // Client request events
+    // HTML APP request events
     // ===================================================
     public void webViewEvents(int request, final String jsonString) {
         int external_cmd = 0;
@@ -320,9 +317,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 break;
             case JSConstants.EVT_BACK_LIGHT:
                 if (preference.getBoolean("sw_back_light", false)) {
-//                    sleep_mode = requestContent.optBoolean("sleep_mode", false);
-//                    setBackLight(sleep_mode);
-                    setBackLight(requestContent.optBoolean("sleep_mode", false));
+                    SysUtils.setBackLight(this, requestContent.optBoolean("sleep_mode", false));
                 }
                 break;
             case JSConstants.EVT_NIGHT_MODE:
@@ -512,26 +507,18 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     private void decryptCommand(String data) {
-        // пока здесь куча отладочного кода -----------------------
-        // почищу когда закончу отладку передачи комманд и значений
-
-        String cmdStr;
         int cmd = 0;
-        Boolean flag;
         if (data == null) {
             System.out.println("decryptCommand | data null");
             return;
         }
 
-        cmdStr = "00";
         try {
             JSONObject clientRequest = new JSONObject(data);
             if (clientRequest.has("cmd")) {
-                cmdStr = clientRequest.optString("cmd");
-                cmd = Integer.parseInt(cmdStr, 16);
+                cmd = Integer.parseInt(clientRequest.optString("cmd", "0"), 16);
                 if (clientRequest.has("json")) {
                     JSONObject json = clientRequest.optJSONObject("json");
-                    // Toast.makeText(this, "Transmitted External Command • $" + cmdStr + " | jsonStr • " + json.toString(), Toast.LENGTH_SHORT).show();
                     externalCMD(cmd, json);
                 } else {
                     externalCMD(cmd);
@@ -540,18 +527,15 @@ public class FullscreenActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        // TODO debug must remove
-        Toast.makeText(getBaseContext(), "Transmitted External Command • $" + cmdStr + " | DEC • " + String.valueOf(cmd), Toast.LENGTH_SHORT).show();
     }
 
     // ===================================
     private void externalCMD(int cmd, JSONObject json) {
-        // Toast.makeText(getBaseContext(), "Transmitted External Command  | DEC • " + String.valueOf(cmd) + " | " + json.toString(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), "Transmitted External Command  | DEC • " + String.valueOf(cmd) + " | " + json.toString(), Toast.LENGTH_SHORT).show();
         switch (cmd) {
             case Constants.CMD_BACK_LIGHT:
                 if (json.has("state")) {
-                    boolean state = json.optBoolean("state", true);
-                    setBackLight(state);
+                    SysUtils.setBackLight(this, json.optBoolean("state", true));
                 }
                 break;
             case Constants.CMD_DEBUG_MODE:
@@ -564,13 +548,16 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     private void externalCMD(int cmd) {
+        // TODO debug must remove
+        Toast.makeText(getBaseContext(), "Transmitted External Command • $" + String.format("%X", cmd) + " | DEC • " + String.valueOf(cmd), Toast.LENGTH_SHORT).show();
+
         if (cmd == lastCMD) {
             return;
         }
         switch (cmd) {
             case Constants.CMD_RESTART:
                 lastCMD = cmd;
-                restartApp();
+                SysUtils.restartApp(this);
                 break;
             case Constants.CMD_BACK:
                 onBackPressed();
@@ -630,7 +617,8 @@ public class FullscreenActivity extends AppCompatActivity {
         lastCMD = cmd;
         currentApp = Constants.HTML_APPS[app_idx];
         if (nextKill) {
-            restartApp(Constants.HTML_APPS[app_idx]);
+            // restartApp(Constants.HTML_APPS[app_idx]);
+            SysUtils.restartApp(this, Constants.HTML_APPS[app_idx], true);
             nextKill = false;
         } else {
             loadHtml(Constants.HTML_APPS[app_idx]);
@@ -652,18 +640,6 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     // ===================================
-    public void setBackLight(Boolean sleep_mode) {
-        WindowManager.LayoutParams layout = getWindow().getAttributes();
-        if (sleep_mode) {
-            layout.screenBrightness = 0.2F;
-        } else {
-            layout.screenBrightness = 0.7F;
-        }
-        System.out.println("[ trace  ] setBackLight " + layout.screenBrightness);
-        getWindow().setAttributes(layout);
-    }
-    // ===================================
-
     @Override
     public void onBackPressed() {
         if (back_pressed + 2000 > System.currentTimeMillis()) {
@@ -678,7 +654,6 @@ public class FullscreenActivity extends AppCompatActivity {
                 Toast.makeText(getBaseContext(), "I think about it",
                         Toast.LENGTH_SHORT).show();
                 // backPrevApp(currentApp);
-                // killAllProcess();
                 // backMain();
             }
         }
@@ -719,40 +694,8 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     // ===================================
-    private void restartApp() {
-        // reboot main application -------
-        Context context = getApplicationContext();
-        Intent mStartActivity = new Intent(context, FullscreenActivity.class);
-        int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
-        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-        System.exit(0);
-    }
-
-    // ===================================
-    private void killAllProcess() {
-        List<ApplicationInfo> packages;
-        PackageManager pm;
-        pm = getPackageManager();
-        //get a list of installed apps.
-        packages = pm.getInstalledApplications(0);
-
-        ActivityManager mActivityManager = (ActivityManager) FullscreenActivity.this.getSystemService(Context.ACTIVITY_SERVICE);
-        String myPackage = getApplicationContext().getPackageName();
-
-        for (ApplicationInfo packageInfo : packages) {
-            if ((packageInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 1) {
-                continue;
-            }
-            if (packageInfo.packageName.equals(myPackage)) {
-                continue;
-            }
-            mActivityManager.killBackgroundProcesses(packageInfo.packageName);
-        }
-        nextKill = false;
-        // TODO  debug must remove
-        // Toast.makeText(getBaseContext(), "Killed All Background Process", Toast.LENGTH_SHORT).show();
-        Toast.makeText(this, "Killed All Background Process", Toast.LENGTH_SHORT).show();
+    private void runKillAllProcess() {
+        nextKill = !SysUtils.killAllProcess(this);
+        // all processes are already killed ---------------
     }
 }
