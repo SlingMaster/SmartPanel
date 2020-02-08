@@ -18,8 +18,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
@@ -507,7 +507,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     private void decryptCommand(String data) {
-        int cmd = 0;
         if (data == null) {
             System.out.println("decryptCommand | data null");
             return;
@@ -516,7 +515,7 @@ public class FullscreenActivity extends AppCompatActivity {
         try {
             JSONObject clientRequest = new JSONObject(data);
             if (clientRequest.has("cmd")) {
-                cmd = Integer.parseInt(clientRequest.optString("cmd", "0"), 16);
+                int cmd = Integer.parseInt(clientRequest.optString("cmd", "0"), 16);
                 if (clientRequest.has("json")) {
                     JSONObject json = clientRequest.optJSONObject("json");
                     externalCMD(cmd, json);
@@ -531,7 +530,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     private void externalCMD(int cmd, JSONObject json) {
-        Toast.makeText(getBaseContext(), "Transmitted External Command  | DEC • " + String.valueOf(cmd) + " | " + json.toString(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), "Transmitted External Command  | DEC • " + cmd + " | " + json.toString(), Toast.LENGTH_SHORT).show();
         switch (cmd) {
             case Constants.CMD_BACK_LIGHT:
                 if (json.has("state")) {
@@ -549,7 +548,7 @@ public class FullscreenActivity extends AppCompatActivity {
     // ===================================
     private void externalCMD(int cmd) {
         // TODO debug must remove
-        Toast.makeText(getBaseContext(), "Transmitted External Command • $" + String.format("%X", cmd) + " | DEC • " + String.valueOf(cmd), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getBaseContext(), "Transmitted External Command • $" + String.format("%X", cmd) + " | DEC • " + cmd, Toast.LENGTH_SHORT).show();
 
         if (cmd == lastCMD) {
             return;

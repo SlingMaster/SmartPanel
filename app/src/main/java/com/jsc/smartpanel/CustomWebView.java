@@ -8,7 +8,7 @@ package com.jsc.smartpanel;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
+import androidx.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
