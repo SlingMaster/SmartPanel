@@ -20,6 +20,8 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
@@ -51,7 +53,6 @@ public class FullscreenActivity extends AppCompatActivity {
     WebView webView;
 
     private long back_pressed;
-    public int port;
     private boolean Night = false;
     private int cur_screen = 1;
     private int lastCMD = 0;
@@ -73,9 +74,6 @@ public class FullscreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         preference = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Device set port ---------------------
-        String strPort = preference.getString("server_port", getResources().getString(R.string.def_port));
-        port = Integer.valueOf(strPort);
         // -------------------------------------
 
         Intent intent = getIntent();
@@ -111,8 +109,10 @@ public class FullscreenActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_fullscreen);
 
-        // server tcpip ------------------------------
-        communicationServer = new CommunicationServer(this);
+        // Device set port ---------------------
+        String strPort = preference.getString("server_port", getResources().getString(R.string.def_port));
+        communicationServer = new CommunicationServer(this, Integer.valueOf(strPort));
+
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
 
@@ -472,6 +472,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     public void updateOnUIThread(String str) {
+        Log.d("net message", str);
         runOnUiThread(new UpdateUIRunnable(str));
     }
 

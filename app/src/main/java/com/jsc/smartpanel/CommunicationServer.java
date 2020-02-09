@@ -20,9 +20,9 @@ class CommunicationServer {
     private ServerSocket serverSocket;
     private Thread serverThread;
 
-    CommunicationServer(@NonNull FullscreenActivity fullscreenActivity) {
+    CommunicationServer(@NonNull FullscreenActivity fullscreenActivity, int port) {
         activity = fullscreenActivity;
-        serverThread = new Thread(new ServerThread());
+        serverThread = new Thread(new ServerThread(port));
         serverThread.start();
     }
 
@@ -30,19 +30,23 @@ class CommunicationServer {
     // Server
     // =========================================
     class ServerThread implements Runnable {
+        int serverPort;
+
+        ServerThread(int port) {
+            serverPort = port;
+        }
 
         public void run() {
-            Socket socket;
             try {
-                serverSocket = new ServerSocket(8080);
+                serverSocket = new ServerSocket(serverPort);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    socket = serverSocket.accept();
-                    CommunicationThread commThread = new CommunicationThread(socket);
-                    new Thread(commThread).start();
+                    Socket socket = serverSocket.accept();
+                    SessionRunnable sessionRunnable = new SessionRunnable(socket);
+                    new Thread(sessionRunnable).start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -51,16 +55,16 @@ class CommunicationServer {
     }
 
     // ----------------------------------------------------
-    class CommunicationThread implements Runnable {
+    class SessionRunnable implements Runnable {
         Socket clientSocket;
         private BufferedReader in;
 
         // ===================================
-        private CommunicationThread(Socket clientSocket) {
+        private SessionRunnable(Socket clientSocket) {
             this.clientSocket = clientSocket;
 
             try {
-                in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
+                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -68,18 +72,28 @@ class CommunicationServer {
 
         // ===================================
         public void run() {
-
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    String readData = in.readLine();
-                    if (!readData.equals("")) {
-                        if (activity != null) {
-                            activity.updateOnUIThread(readData);
-                        }
+            StringBuilder data = new StringBuilder();
+            String line;
+            try {
+                while ((line = in.readLine()) != null) {
+                    if (!line.equals("")) {
+                        data.append(line).append('\n');
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                in.close();
+                in = null;
+                clientSocket.close();
+                clientSocket = null;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (activity != null) {
+                activity.updateOnUIThread(data.toString());
             }
         }
     }
