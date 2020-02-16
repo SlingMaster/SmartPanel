@@ -8,8 +8,6 @@
 package com.jsc.smartpanel;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,9 +16,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -40,6 +35,8 @@ import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import jsinterface.JSConstants;
 import jsinterface.JSOut;
 import utils.GlobalUtils;
@@ -110,8 +107,7 @@ public class FullscreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_fullscreen);
 
         // Device set port ---------------------
-        String strPort = preference.getString("server_port", getResources().getString(R.string.def_port));
-        communicationServer = new CommunicationServer(this, Integer.valueOf(strPort));
+        communicationServer = new CommunicationServer(this, Constants.SERVER_PORT);
 
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
@@ -190,9 +186,6 @@ public class FullscreenActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
         }
-
-        String strPort = preference.getString("server_port", getResources().getString(R.string.def_port));
-        communicationServer.updatePort(Integer.valueOf(strPort));
     }
 
     @Override
@@ -648,44 +641,9 @@ public class FullscreenActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(getBaseContext(), "I think about it",
                         Toast.LENGTH_SHORT).show();
-                // backPrevApp(currentApp);
-                // backMain();
             }
         }
         back_pressed = System.currentTimeMillis();
-    }
-
-    private void backMain() {
-        Intent intent = getPackageManager().getLaunchIntentForPackage(Constants.PACKAGES[0]);
-        if (intent != null) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-            // Bundle is optional --------------
-//            Bundle bundle = new Bundle();
-//            bundle.putInt("lastCMD", lastCMD);
-//            intent.putExtras(bundle);
-            //  end Bundle ---------------------
-            startActivity(intent);
-            View splash = findViewById(R.id.splash);
-            if (splash.getVisibility() == View.GONE) {
-                splash.setVisibility(View.VISIBLE);
-            }
-        }
-    }
-
-    // ===================================
-    private void restartApp(String nextApp) {
-        // reboot main application & load next app
-        Context context = getApplicationContext();
-        Intent mStartActivity = new Intent(context, FullscreenActivity.class);
-        mStartActivity.putExtra("next_app", nextApp);
-        mStartActivity.putExtra("next_kill", nextKill);
-        int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
-        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-        System.exit(0);
     }
 
     // ===================================

@@ -6,7 +6,6 @@
     <string name="weather_xml">http://informer.gismeteo.ru/xml/34300_1.xml</string>
     <string name="root_debug">http://192.168.1.2/Projects/SmartPanel/</string>
     <string name="root">file:///android_asset/</string>
-    <string name="def_port">8080</string>
     <string name="ip">IP • </string>
 
     <string name="msg_exit">Press once again to exit!</string>
@@ -75,7 +74,6 @@
     <string name="pref_title_port">Server Port for Remote Control</string>
     <string name="pref_title_reset">Reset Default Preferences</string>
     <string name="pref_title_desc">For the changes to take effect return to application</string>
-    <string name="pref_default_port">10000</string>
     <string name="pref_group_title_develop">DEVELOPER OPTIONS</string>
     <string name="pref_title_debug_mode">Debug Mode</string>
     <string name="pref_title_clear_cache">Clear Cache</string>

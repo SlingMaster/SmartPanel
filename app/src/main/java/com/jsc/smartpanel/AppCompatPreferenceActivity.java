@@ -153,7 +153,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
             // reset last project options ---------
             SharedPreferences.Editor editor = preference.edit();
             editor.putBoolean("develop_mode", false);
-            editor.putString("server_port", "777");
+//            editor.putString("server_port", "777");
 //            editor.putString("user_envoy_manager_url", getResources().getString(R.string.user_envoy_manager_def));
 //            editor.putString("admin_login", getResources().getString(R.string.pref_def_user));
 //            editor.putString("admin_password", "***");
@@ -170,8 +170,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
     private String getIP() {
         String ipAddress;
         SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(this);
-        ipAddress = GlobalUtils.getIP() + " : " +
-                preference.getString("server_port", getResources().getString(R.string.def_port));
+        ipAddress = GlobalUtils.getIP() + " : " + Constants.SERVER_PORT;
         return ipAddress;
     }
 

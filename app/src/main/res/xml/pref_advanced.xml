@@ -14,17 +14,6 @@
         android:selectable="false"
         android:shouldDisableView="false"
         android:title="@string/pref_group_title_remote" />
-    <EditTextPreference
-        android:icon="@drawable/ic_port"
-        android:inputType="numberDecimal"
-        android:key="server_port"
-        android:maxLength="4"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:summary="..."
-        android:title="@string/pref_title_port"
-        android:defaultValue="8080"/>
     <SwitchPreference
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
