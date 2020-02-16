@@ -183,21 +183,16 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        getSupportActionBar().hide();
         GlobalUtils.hideSystemUI(webView);
         nextKill = false;
         if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
         }
-        // performed by a separate request ==================
-        // new ReadXmlTask(FullscreenActivity.this).execute();
-    }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // save state app -----------------
-        // outState.putDouble(BILL_TOTAL, currentBillTotal);
+        String strPort = preference.getString("server_port", getResources().getString(R.string.def_port));
+        communicationServer.updatePort(Integer.valueOf(strPort));
     }
 
     @Override

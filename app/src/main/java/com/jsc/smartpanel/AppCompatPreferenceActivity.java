@@ -181,7 +181,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
         PackageInfo pInfo;
         try {
             pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            versionName = pInfo.versionCode + "." + pInfo.versionName;
+            versionName = pInfo.versionName;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }

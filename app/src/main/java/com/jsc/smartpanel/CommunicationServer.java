@@ -19,20 +19,26 @@ class CommunicationServer {
     private FullscreenActivity activity;
     private ServerSocket serverSocket;
     private Thread serverThread;
+    private ServerRunnable serverRunnable;
 
     CommunicationServer(@NonNull FullscreenActivity fullscreenActivity, int port) {
         activity = fullscreenActivity;
-        serverThread = new Thread(new ServerThread(port));
+        serverRunnable = new ServerRunnable(port);
+        serverThread = new Thread(serverRunnable);
         serverThread.start();
     }
 
     // =========================================
     // Server
     // =========================================
-    class ServerThread implements Runnable {
-        int serverPort;
+    class ServerRunnable implements Runnable {
+        volatile int serverPort;
 
-        ServerThread(int port) {
+        ServerRunnable(int port) {
+            serverPort = port;
+        }
+
+        void updatePort(int port) {
             serverPort = port;
         }
 
@@ -113,5 +119,10 @@ class CommunicationServer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    void updatePort(int port) {
+        if(port>0)
+            serverRunnable.updatePort(port);
     }
 }
