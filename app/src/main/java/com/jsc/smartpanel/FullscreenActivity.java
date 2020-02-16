@@ -34,6 +34,8 @@ import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,12 +48,16 @@ public class FullscreenActivity extends AppCompatActivity {
 
     CommunicationServer communicationServer;
     public static SharedPreferences preference;
+    Timer timer;
+    TimerTask swapTimerTask;
+
+    //    private TimerInterval swapScreenTimer;
     private View mControlsView;
     WebView webView;
 
     private long back_pressed;
     private boolean Night = false;
-    private int cur_screen = 1;
+    private int cur_screen = 0;
     private int lastCMD = 0;
     private String nextApp;
     private Boolean nextKill;
@@ -186,11 +192,29 @@ public class FullscreenActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
         }
+        // start swap timer ------
+        startTimer();
+        // performed by a separate request ==================
+        // new ReadXmlTask(FullscreenActivity.this).execute();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // save state app -----------------
+        // outState.putDouble(BILL_TOTAL, currentBillTotal);
+    }
+
+    @Override
+    protected void onStop() {
+        stopTimer();
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
         System.out.println("trace • onDestroy");
+        stopTimer();
         communicationServer.stop();
         super.onDestroy();
     }
@@ -248,7 +272,6 @@ public class FullscreenActivity extends AppCompatActivity {
     // HTML APP request events
     // ===================================================
     public void webViewEvents(int request, final String jsonString) {
-        int external_cmd = 0;
         JSONObject requestContent = new JSONObject();
 
         try {
@@ -268,50 +291,53 @@ public class FullscreenActivity extends AppCompatActivity {
                 callbackToUI(JSConstants.EVT_MAIN_TEST, createResponse(requestContent, null));
                 break;
             case JSConstants.EVT_READY:
-                // AppUI = requestContent.optString("ui");
                 callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, initData(this)));
-//                if (AppUI.equalsIgnoreCase("project_weather")) {
-//                 } else {
-//                    callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, stateData()));
-//                }
-
                 break;
             case JSConstants.EVT_WEATHER:
                 String list_url = getResources().getString(R.string.weather_xml);
                 new ReadXmlTask(this, list_url).execute();
-                // callbackToUI(JSConstants.CMD_WEATHER_DATA, createResponse(requestContent, sendData));
                 break;
             case JSConstants.EVT_NEXT:
-                if (Night) {
-                    return;
-                }
-                cur_screen++;
-                if (cur_screen > Constants.MAX_SCR) {
-                    cur_screen = 1;
-                }
-                if (preference.getBoolean("sw_swap", false)) {
-                    switch (cur_screen) {
-                        case 1:
-                            external_cmd = Constants.CMD_LOAD_TIMER;
-                            break;
-                        case 2:
-                            external_cmd = Constants.CMD_LOAD_WEATHER;
-                            break;
-                        default:
-                            external_cmd = 0;
-                            break;
-                    }
-                }
+//               startTimer();
+//                if (Night) {
+////                    return;
+////                }
+////                cur_screen++;
+////                if (cur_screen > Constants.MAX_SCR) {
+////                    cur_screen = 1;
+////                }
+////                if (preference.getBoolean("sw_swap", false)) {
+////                    System.out.println("trace | Cur_screen = " + String.valueOf(cur_screen));
+////                    switch (cur_screen) {
+////                        case 1:
+////                            external_cmd = Constants.CMD_LOAD_TIMER;
+////                            break;
+////                        case 2:
+//////                            external_cmd = Constants.CMD_LOAD_WEATHER;
+////                            external_cmd = Constants.CMD_LOAD_SMART;
+////                            break;
+////                        default:
+////                            external_cmd = 0;
+////                            break;
+////                    }
+////                    System.out.println("trace   | external_cmd = " + external_cmd + " | jsonString:" + jsonString);
+//////                    return;
+////                }
                 break;
             case JSConstants.EVT_BACK_LIGHT:
-                if (preference.getBoolean("sw_back_light", false)) {
-                    SysUtils.setBackLight(this, requestContent.optBoolean("sleep_mode", false));
-                }
+//                if (preference.getBoolean("sw_back_light", false)) {
+//                    SysUtils.setBackLight(this, requestContent.optBoolean("sleep_mode", false));
+//                }
+                break;
+            case JSConstants.EVT_SYNC:
+                syncData();
                 break;
             case JSConstants.EVT_NIGHT_MODE:
-                Night = requestContent.optBoolean("state", false);
-                external_cmd = Night ? Constants.CMD_LOAD_TIMER : Constants.CMD_LOAD_WEATHER;
-                System.out.println("trace   | Night: " + Night + " CMD : " + external_cmd);
+//                 ??? error weather ======
+//                syncData();
+//                Night = requestContent.optBoolean("state", false);
+//                external_cmd = Night ? Constants.CMD_LOAD_TIMER : Constants.CMD_LOAD_WEATHER;
+//                System.out.println("trace   | Night: " + Night + " CMD : " + external_cmd);
                 break;
             case JSConstants.EVT_BACK:
                 break;
@@ -320,13 +346,13 @@ public class FullscreenActivity extends AppCompatActivity {
             case JSConstants.EVT_EXO_RESPONSE:
                 break;
             default:
-                external_cmd = 0;
+                // external_cmd = 0;
                 break;
         }
-        System.out.println("trace   | external_cmd = " + external_cmd + " | jsonString:" + jsonString);
-        if (external_cmd > 0) {
-            new Handler().post(new UpdateUIRunnable(external_cmd));
-        }
+//        System.out.println("trace   | external_cmd = " + external_cmd + " | jsonString:" + jsonString);
+//        if (external_cmd > 0) {
+//            new Handler().post(new UpdateUIRunnable(external_cmd));
+//        }
     }
 
     // ----------------------------------------
@@ -641,14 +667,90 @@ public class FullscreenActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(getBaseContext(), "I think about it",
                         Toast.LENGTH_SHORT).show();
+                // backPrevApp(currentApp);
+                // backMain();
             }
         }
         back_pressed = System.currentTimeMillis();
     }
 
     // ===================================
+    public void swapScreen() {
+        cur_screen++;
+        if (cur_screen >= Constants.SWAP_APPS.length) {
+            cur_screen = 0;
+        }
+        System.out.println("traceSW | Swap Screen | Cur_screen = " + String.valueOf(cur_screen));
+        new Handler().post(new UpdateUIRunnable(Constants.SWAP_APPS[cur_screen]));
+        SysUtils.setBackLight(this, true);
+    }
+
+    // ===================================
     private void runKillAllProcess() {
-        nextKill = !SysUtils.killAllProcess(this);
+        SysUtils.killAllProcess(this);
+        nextKill = false;
         // all processes are already killed ---------------
+    }
+
+    // ===================================
+    private void syncData() {
+        boolean night = SysUtils.isNight(
+                preference.getString("start_day", "6"),
+                preference.getString("start_night", "20"));
+        if (!night) {
+            startTimer();
+        }
+        SysUtils.setBackLight(this, night);
+    }
+
+    // ===================================
+    // Swap Screen Timer
+    // ===================================
+
+    // ===================================
+    private void startTimer() {
+        if (preference.getBoolean("sw_swap", true)) {
+            if (SysUtils.isNight(
+                    preference.getString("start_day", "6"),
+                    preference.getString("start_night", "20"))) {
+                System.out.println("traceSW | Next stopTimer");
+                stopTimer();
+                new Handler().post(new UpdateUIRunnable(Constants.CMD_LOAD_TIMER));
+            } else {
+                if (timer == null) {
+                    System.out.println("traceSW | startTimer");
+                    String tempNumStr = preference.getString("swap_frequency", "1");
+                    int swap_frequency = Integer.parseInt(tempNumStr) * 60000;
+                    timer = new Timer();
+                    swapTimerTask = new SwapTimerTask();
+                    timer.schedule(swapTimerTask, 60000, swap_frequency);
+                }
+            }
+        }
+    }
+
+    // ===================================
+    private void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+            swapTimerTask = null;
+        }
+    }
+
+    // ===================================
+    class SwapTimerTask extends TimerTask {
+        @Override
+        public void run() {
+
+            // --------------------------
+            runOnUiThread(new Runnable() {
+                // Отображаем информацию в текстовом поле count:
+                @Override
+                public void run() {
+                    swapScreen();
+                }
+            });
+        }
     }
 }

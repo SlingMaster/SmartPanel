@@ -106,12 +106,12 @@ public class GlobalUtils {
 //    }
 
     // ====================================================
-    static String GetToday() {
-        Date presentTime_Date = Calendar.getInstance().getTime();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy | HH:mm:ss", Locale.US);
-        // dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        return dateFormat.format(presentTime_Date);
-    }
+//    static String GetToday() {
+//        Date presentTime_Date = Calendar.getInstance().getTime();
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy | HH:mm:ss", Locale.US);
+//        // dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+//        return dateFormat.format(presentTime_Date);
+//    }
 
     // ===================================================
     public static boolean isConnectingToInternet(Context context) {
