@@ -530,7 +530,7 @@ public class FullscreenActivity extends AppCompatActivity {
         try {
             JSONObject clientRequest = new JSONObject(data);
             if (clientRequest.has("cmd")) {
-                int cmd = Integer.parseInt(clientRequest.optString("cmd", "0"), 16);
+                int cmd = clientRequest.optInt("cmd", 0);
                 if (clientRequest.has("json")) {
                     JSONObject json = clientRequest.optJSONObject("json");
                     externalCMD(cmd, json);
@@ -544,7 +544,7 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     // ===================================
-    private void externalCMD(int cmd, JSONObject json) {
+    private void externalCMD(int cmd, @NonNull JSONObject json) {
         Toast.makeText(getBaseContext(), "Transmitted External Command  | DEC • " + cmd + " | " + json.toString(), Toast.LENGTH_SHORT).show();
         switch (cmd) {
             case Constants.CMD_BACK_LIGHT:
