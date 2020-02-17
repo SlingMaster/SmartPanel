@@ -94,7 +94,9 @@
     <string name="pref_schedule_swap_desc">Periodic Change of Screens</string>
     <string name="pref_schedule_swap_freq">Swap Screens Frequency</string>
 
-    <string name="pref_schedule_def_frequency">1</string>
+    <string name="pref_schedule_def_start_day">6</string>
+    <string name="pref_schedule_def_start_night">21</string>
+    <string name="pref_schedule_def_frequency">2</string>
     <string name="pref_schedule_def_frequency_str">1 min</string>
     <string-array name="pref_schedule_frequency_titles">
         <item>2 minutes</item>
