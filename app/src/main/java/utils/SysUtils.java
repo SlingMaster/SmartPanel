@@ -119,9 +119,9 @@ public class SysUtils {
         int start_night = Integer.parseInt(startNight);
 
         if (hh >= start_night || hh < start_day) {
-            System.out.println("traceSW |" + hh + " >= " + start_night + " | Сейчас ночь");
+            System.out.println("traceSW |" + hh + " >= " + start_night + "It's Night now");
         } else {
-            System.out.println("traceSW |" + hh + " >= " + start_night + " | Сейчас день");
+            System.out.println("traceSW |" + hh + " >= " + start_night + "It's Day now");
         }
         return (hh >= start_night || hh < start_day);
     }
