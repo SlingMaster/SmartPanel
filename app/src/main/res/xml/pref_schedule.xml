@@ -6,7 +6,6 @@
 
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
-<!--    <PreferenceCategory android:title="@string/pref_group_title_schedule" />-->
     <PreferenceCategory android:title="@string/empty">
 
     </PreferenceCategory>
@@ -14,13 +13,13 @@
         android:icon="@drawable/ic_grp_schedule"
         android:title="@string/pref_group_title_schedule" />
     <SwitchPreference
-        android:defaultValue="false"
+        android:defaultValue="true"
         android:icon="@drawable/ic_night_mode"
         android:key="sw_auto_start"
         android:summary="@string/pref_schedule_auto_desc"
         android:title="@string/pref_schedule_auto_title" />
     <SwitchPreference
-        android:defaultValue="false"
+        android:defaultValue="true"
         android:icon="@drawable/ic_light"
         android:key="sw_back_light"
         android:summary="@string/pref_schedule_backlight_desc"

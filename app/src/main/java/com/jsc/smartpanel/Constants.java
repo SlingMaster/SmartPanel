@@ -37,7 +37,7 @@ public class Constants {
     static final int CMD_WIFI_SCANNER = 0x46;
     static final String[] HTML_APPS = {"smarthome.html", "smarthome/statistic.html", "timer.html", "weather.html"};
     static final String[] PACKAGES = {"com.jsc.smartpanel", "air.InternetRadio", "air.SlingPlayerTablet3.A4", "com.pinapps.amped"};
-    static final int[] SWAP_APPS = {CMD_LOAD_TIMER, CMD_LOAD_WEATHER, CMD_LOAD_SMART};
-
+    // static final int[] SWAP_APPS = {CMD_LOAD_TIMER, CMD_LOAD_WEATHER, CMD_LOAD_SMART};
+    static final int[] SWAP_APPS = {CMD_LOAD_TIMER, CMD_LOAD_WEATHER};
 }
 
