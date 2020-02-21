@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -126,6 +127,8 @@ public class FullscreenActivity extends AppCompatActivity {
         webView = findViewById(R.id.web_view);
         webView.setOnClickListener(view -> toggle());
         webView.setWebViewClient(new NocWebViewClient());
+        // A/libc: Fatal signal 11 (SIGSEGV) at 0x002d0027 (code=1)
+        webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
         // ---------------------------------------------------
         externalCMD(Constants.CMD_LOAD_TIMER);
@@ -246,7 +249,26 @@ public class FullscreenActivity extends AppCompatActivity {
         if (clear_cache) {
             webView.clearCache(true);
         }
+
+        // ********************************
+        // should solve the problem
+        // SIGNAL 11 SIGSEGV crash Android
+        // !!! пока не помогло переодически app валится
+        webView.clearCache(true);
+        webView.destroyDrawingCache();
+        // ********************************
+
+        String msg = "FREE RAM before : " + SysUtils.getFreeMemory(this) + " Mb\n";
         webView.loadUrl(root + url);
+
+        // ********************************
+        // this code must remove after debug
+        // ********************************
+        // memory leak --------------------
+        msg = msg + "after : " + SysUtils.getFreeMemory(this) + " Mb";
+        TextView textInfo = findViewById(R.id.memInfo);
+        textInfo.setText(msg);
+        // ********************************
 
         // js interface --------------------------------------
         jsOut = new JSOut(webView);
@@ -364,7 +386,7 @@ public class FullscreenActivity extends AppCompatActivity {
             obj.put("phone_ui", !GlobalUtils.isTablet(context));
             obj.put("android_app", true);
             obj.put("node_url", preference.getString("ip_weather", GlobalUtils.getString(context, R.string.def_node_weather_url)));
-            obj.put("node_bathroom_url", preference.getString("ip_bathroom", GlobalUtils.getString(context, R.string.def_node_weather_url)));
+            obj.put("node_bathroom_url", preference.getString("ip_bathroom", GlobalUtils.getString(context, R.string.def_node_bathroom_url)));
             obj.put("chip_weather", preference.getString("chip_weather", GlobalUtils.getString(context, R.string.def_node_weather_chip)));
             obj.put("chip_bathroom", preference.getString("chip_bathroom", GlobalUtils.getString(context, R.string.def_node_bathroom_chip)));
             obj.put("auto_start_night_mode", preference.getBoolean("sw_auto_start", false));
@@ -697,10 +719,21 @@ public class FullscreenActivity extends AppCompatActivity {
         boolean night = SysUtils.isNight(
                 preference.getString("start_day", "6"),
                 preference.getString("start_night", "20"));
-        if (!night) {
+
+        if (night) {
+            // ***********************************************
+            // set backLight should work in a separate thread
+            // working if Auto Set Backlight Screen is enabled
+            // ***********************************************
+            if (preference.getBoolean("sw_back_light", false)) {
+                updateOnUIThread("{cmd:4,json:{state:true}}");
+            }
+        } else {
             startTimer();
+            if (preference.getBoolean("sw_back_light", false)) {
+                updateOnUIThread("{cmd:4,json:{state:false}}");
+            }
         }
-        SysUtils.setBackLight(this, night);
     }
 
     // ===================================
@@ -709,6 +742,10 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     private void startTimer() {
+        // ***********************************************
+        // work if Auto Swap Screens is enabled
+        // only during the daytime 
+        // ***********************************************
         if (preference.getBoolean("sw_swap", true)) {
             if (SysUtils.isNight(
                     preference.getString("start_day", "6"),
@@ -754,3 +791,7 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     }
 }
+
+//    getWindow().setFlags(
+//        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+//        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
