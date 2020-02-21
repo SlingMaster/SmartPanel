@@ -25,7 +25,9 @@
         <com.jsc.smartpanel.CustomWebView
             android:id="@+id/web_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent" >
+
+        </com.jsc.smartpanel.CustomWebView>
     </LinearLayout>
 
     <LinearLayout
@@ -157,6 +159,20 @@
         android:contentDescription="@string/ic_desc"
         android:scaleType="center"
         app:srcCompat="@drawable/ic_more" />
+
+    <TextView
+        android:id="@+id/memInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:paddingLeft="@dimen/debug_panel_padding"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:paddingRight="@dimen/debug_panel_padding"
+        android:paddingBottom="@dimen/nav_header_vertical_spacing"
+        android:text="@string/empty"
+        android:textColor="@android:color/holo_orange_light"
+        android:textSize="18sp"
+        tools:text="@string/about_app_title" />
 
     <FrameLayout
         android:layout_width="match_parent"
