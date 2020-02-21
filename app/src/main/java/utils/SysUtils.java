@@ -22,7 +22,25 @@ import com.jsc.smartpanel.FullscreenActivity;
 import java.util.Calendar;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+
 public class SysUtils {
+
+    // ===================================
+    public static long getFreeMemory(Activity mainActivity) {
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        ActivityManager activityManager = (ActivityManager) mainActivity.getSystemService(Context.ACTIVITY_SERVICE);
+        try {
+            activityManager.getMemoryInfo(memoryInfo);
+            return memoryInfo.availMem / 1048576;
+            //  memoryInfo.totalMem
+        } catch (NullPointerException e) {
+            System.out.println("NullPointerException occurred");
+            return 0;
+        }
+    }
+
+    // ===================================
     public static void setBackLight(Activity mainActivity, Boolean sleep_mode) {
         WindowManager.LayoutParams layout = mainActivity.getWindow().getAttributes();
         if (sleep_mode) {
@@ -65,6 +83,7 @@ public class SysUtils {
         Context context = mainActivity.getApplicationContext();
         Intent mStartActivity = new Intent(context, FullscreenActivity.class);
         int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
+//        mStartActivity.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
@@ -118,11 +137,13 @@ public class SysUtils {
         int start_day = Integer.parseInt(startDay);
         int start_night = Integer.parseInt(startNight);
 
-        if (hh >= start_night || hh < start_day) {
-            System.out.println("traceSW |" + hh + " >= " + start_night + "It's Night now");
-        } else {
-            System.out.println("traceSW |" + hh + " >= " + start_night + "It's Day now");
-        }
+
+
+//        if (hh >= start_night || hh < start_day) {
+//            System.out.println("traceSW |" + hh + " >= " + start_night + " It's Night now");
+//        } else {
+//            System.out.println("traceSW |" + hh + " >= " + start_night + " It's Day now");
+//        }
         return (hh >= start_night || hh < start_day);
     }
 
