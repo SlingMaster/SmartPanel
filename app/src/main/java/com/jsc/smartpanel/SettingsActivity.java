@@ -17,10 +17,11 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import androidx.appcompat.app.ActionBar;
 import android.view.MenuItem;
 
 import java.util.List;
+
+import androidx.appcompat.app.ActionBar;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -197,7 +198,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("server_port"));
+            //  bindPreferenceSummaryToValue(findPreference("server_port"));
         }
 
         @Override

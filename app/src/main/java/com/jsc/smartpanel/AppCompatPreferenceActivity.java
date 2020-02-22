@@ -13,15 +13,16 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import androidx.annotation.LayoutRes;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatDelegate;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatDelegate;
 import utils.GlobalUtils;
 
 /**
@@ -146,21 +147,29 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
         SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(this);
         boolean reset_default = preference.getBoolean("sw_reset_default", false);
         if (reset_default) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.pref_title_reset), Toast.LENGTH_LONG).show();
             // reset default settings
             preference.edit().clear().apply();
             // System.out.println("resetPreferencesDefault");
-
             // reset last project options ---------
             SharedPreferences.Editor editor = preference.edit();
             editor.putBoolean("develop_mode", false);
-            editor.putString("server_port", "777");
-//            editor.putString("user_envoy_manager_url", getResources().getString(R.string.user_envoy_manager_def));
-//            editor.putString("admin_login", getResources().getString(R.string.pref_def_user));
-//            editor.putString("admin_password", "***");
-//            editor.putString("user_login", getResources().getString(R.string.pref_def_user));
-//            editor.putString("user_password", "***");
-//            editor.putString("dev_url", getResources().getString(R.string.dev_url_def));
-//            editor.putString("lan_key", getResources().getString(R.string.lan_key_def));
+            // settings general -------------------
+            editor.putString("ip_weather", getResources().getString(R.string.def_node_weather_url));
+            editor.putString("chip_weather", getResources().getString(R.string.def_node_weather_chip));
+            editor.putString("ip_bathroom", getResources().getString(R.string.def_node_bathroom_url));
+            editor.putString("chip_bathroom", getResources().getString(R.string.def_node_bathroom_chip));
+            // settings advanced -------------------
+            editor.putBoolean("sw_debug_mode", false);
+            editor.putBoolean("sw_clear_cache", false);
+            // settings schedule -------------------
+            editor.putBoolean("sw_auto_start", true);
+            editor.putBoolean("sw_back_light", true);
+            editor.putString("start_day", getResources().getString(R.string.pref_schedule_def_start_day));
+            editor.putString("start_night", getResources().getString(R.string.pref_schedule_def_start_night));
+            editor.putBoolean("sw_swap", false);
+            editor.putString("swap_frequency", getResources().getString(R.string.pref_schedule_def_frequency));
             editor.apply();
         }
     }
@@ -170,8 +179,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
     private String getIP() {
         String ipAddress;
         SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(this);
-        ipAddress = GlobalUtils.getIP() + " : " +
-                preference.getString("server_port", getResources().getString(R.string.def_port));
+        ipAddress = GlobalUtils.getIP() + " : " + Constants.SERVER_PORT;
         return ipAddress;
     }
 
@@ -181,7 +189,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
         PackageInfo pInfo;
         try {
             pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-            versionName = pInfo.versionCode + "." + pInfo.versionName;
+            versionName = pInfo.versionName;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }

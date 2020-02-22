@@ -8,8 +8,6 @@
 package com.jsc.smartpanel;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,13 +16,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -37,7 +35,11 @@ import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import jsinterface.JSConstants;
 import jsinterface.JSOut;
 import utils.GlobalUtils;
@@ -47,13 +49,16 @@ public class FullscreenActivity extends AppCompatActivity {
 
     CommunicationServer communicationServer;
     public static SharedPreferences preference;
+    Timer timer;
+    TimerTask swapTimerTask;
+
+    //    private TimerInterval swapScreenTimer;
     private View mControlsView;
     WebView webView;
 
     private long back_pressed;
-    public int port;
     private boolean Night = false;
-    private int cur_screen = 1;
+    private int cur_screen = 0;
     private int lastCMD = 0;
     private String nextApp;
     private Boolean nextKill;
@@ -73,9 +78,6 @@ public class FullscreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         preference = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Device set port ---------------------
-        String strPort = preference.getString("server_port", getResources().getString(R.string.def_port));
-        port = Integer.valueOf(strPort);
         // -------------------------------------
 
         Intent intent = getIntent();
@@ -111,8 +113,9 @@ public class FullscreenActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_fullscreen);
 
-        // server tcpip ------------------------------
-        communicationServer = new CommunicationServer(this);
+        // Device set port ---------------------
+        communicationServer = new CommunicationServer(this, Constants.SERVER_PORT);
+
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
 
@@ -124,6 +127,8 @@ public class FullscreenActivity extends AppCompatActivity {
         webView = findViewById(R.id.web_view);
         webView.setOnClickListener(view -> toggle());
         webView.setWebViewClient(new NocWebViewClient());
+        // A/libc: Fatal signal 11 (SIGSEGV) at 0x002d0027 (code=1)
+        webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
         // ---------------------------------------------------
         externalCMD(Constants.CMD_LOAD_TIMER);
@@ -183,12 +188,15 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        getSupportActionBar().hide();
         GlobalUtils.hideSystemUI(webView);
         nextKill = false;
         if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
         }
+        // start swap timer ------
+        startTimer();
         // performed by a separate request ==================
         // new ReadXmlTask(FullscreenActivity.this).execute();
     }
@@ -201,8 +209,15 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        stopTimer();
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
         System.out.println("trace • onDestroy");
+        stopTimer();
         communicationServer.stop();
         super.onDestroy();
     }
@@ -234,7 +249,26 @@ public class FullscreenActivity extends AppCompatActivity {
         if (clear_cache) {
             webView.clearCache(true);
         }
+
+        // ********************************
+        // should solve the problem
+        // SIGNAL 11 SIGSEGV crash Android
+        // !!! пока не помогло переодически app валится
+        webView.clearCache(true);
+        webView.destroyDrawingCache();
+        // ********************************
+
+        String msg = "FREE RAM before : " + SysUtils.getFreeMemory(this) + " Mb\n";
         webView.loadUrl(root + url);
+
+        // ********************************
+        // this code must remove after debug
+        // ********************************
+        // memory leak --------------------
+        msg = msg + "after : " + SysUtils.getFreeMemory(this) + " Mb";
+        TextView textInfo = findViewById(R.id.memInfo);
+        textInfo.setText(msg);
+        // ********************************
 
         // js interface --------------------------------------
         jsOut = new JSOut(webView);
@@ -260,7 +294,6 @@ public class FullscreenActivity extends AppCompatActivity {
     // HTML APP request events
     // ===================================================
     public void webViewEvents(int request, final String jsonString) {
-        int external_cmd = 0;
         JSONObject requestContent = new JSONObject();
 
         try {
@@ -280,50 +313,53 @@ public class FullscreenActivity extends AppCompatActivity {
                 callbackToUI(JSConstants.EVT_MAIN_TEST, createResponse(requestContent, null));
                 break;
             case JSConstants.EVT_READY:
-                // AppUI = requestContent.optString("ui");
                 callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, initData(this)));
-//                if (AppUI.equalsIgnoreCase("project_weather")) {
-//                 } else {
-//                    callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, stateData()));
-//                }
-
                 break;
             case JSConstants.EVT_WEATHER:
                 String list_url = getResources().getString(R.string.weather_xml);
                 new ReadXmlTask(this, list_url).execute();
-                // callbackToUI(JSConstants.CMD_WEATHER_DATA, createResponse(requestContent, sendData));
                 break;
             case JSConstants.EVT_NEXT:
-                if (Night) {
-                    return;
-                }
-                cur_screen++;
-                if (cur_screen > Constants.MAX_SCR) {
-                    cur_screen = 1;
-                }
-                if (preference.getBoolean("sw_swap", false)) {
-                    switch (cur_screen) {
-                        case 1:
-                            external_cmd = Constants.CMD_LOAD_TIMER;
-                            break;
-                        case 2:
-                            external_cmd = Constants.CMD_LOAD_WEATHER;
-                            break;
-                        default:
-                            external_cmd = 0;
-                            break;
-                    }
-                }
+//               startTimer();
+//                if (Night) {
+////                    return;
+////                }
+////                cur_screen++;
+////                if (cur_screen > Constants.MAX_SCR) {
+////                    cur_screen = 1;
+////                }
+////                if (preference.getBoolean("sw_swap", false)) {
+////                    System.out.println("trace | Cur_screen = " + String.valueOf(cur_screen));
+////                    switch (cur_screen) {
+////                        case 1:
+////                            external_cmd = Constants.CMD_LOAD_TIMER;
+////                            break;
+////                        case 2:
+//////                            external_cmd = Constants.CMD_LOAD_WEATHER;
+////                            external_cmd = Constants.CMD_LOAD_SMART;
+////                            break;
+////                        default:
+////                            external_cmd = 0;
+////                            break;
+////                    }
+////                    System.out.println("trace   | external_cmd = " + external_cmd + " | jsonString:" + jsonString);
+//////                    return;
+////                }
                 break;
             case JSConstants.EVT_BACK_LIGHT:
-                if (preference.getBoolean("sw_back_light", false)) {
-                    SysUtils.setBackLight(this, requestContent.optBoolean("sleep_mode", false));
-                }
+//                if (preference.getBoolean("sw_back_light", false)) {
+//                    SysUtils.setBackLight(this, requestContent.optBoolean("sleep_mode", false));
+//                }
+                break;
+            case JSConstants.EVT_SYNC:
+                syncData();
                 break;
             case JSConstants.EVT_NIGHT_MODE:
-                Night = requestContent.optBoolean("state", false);
-                external_cmd = Night ? Constants.CMD_LOAD_TIMER : Constants.CMD_LOAD_WEATHER;
-                System.out.println("trace   | Night: " + Night + " CMD : " + external_cmd);
+//                 ??? error weather ======
+//                syncData();
+//                Night = requestContent.optBoolean("state", false);
+//                external_cmd = Night ? Constants.CMD_LOAD_TIMER : Constants.CMD_LOAD_WEATHER;
+//                System.out.println("trace   | Night: " + Night + " CMD : " + external_cmd);
                 break;
             case JSConstants.EVT_BACK:
                 break;
@@ -332,13 +368,13 @@ public class FullscreenActivity extends AppCompatActivity {
             case JSConstants.EVT_EXO_RESPONSE:
                 break;
             default:
-                external_cmd = 0;
+                // external_cmd = 0;
                 break;
         }
-        System.out.println("trace   | external_cmd = " + external_cmd + " | jsonString:" + jsonString);
-        if (external_cmd > 0) {
-            new Handler().post(new UpdateUIRunnable(external_cmd));
-        }
+//        System.out.println("trace   | external_cmd = " + external_cmd + " | jsonString:" + jsonString);
+//        if (external_cmd > 0) {
+//            new Handler().post(new UpdateUIRunnable(external_cmd));
+//        }
     }
 
     // ----------------------------------------
@@ -350,7 +386,7 @@ public class FullscreenActivity extends AppCompatActivity {
             obj.put("phone_ui", !GlobalUtils.isTablet(context));
             obj.put("android_app", true);
             obj.put("node_url", preference.getString("ip_weather", GlobalUtils.getString(context, R.string.def_node_weather_url)));
-            obj.put("node_bathroom_url", preference.getString("ip_bathroom", GlobalUtils.getString(context, R.string.def_node_weather_url)));
+            obj.put("node_bathroom_url", preference.getString("ip_bathroom", GlobalUtils.getString(context, R.string.def_node_bathroom_url)));
             obj.put("chip_weather", preference.getString("chip_weather", GlobalUtils.getString(context, R.string.def_node_weather_chip)));
             obj.put("chip_bathroom", preference.getString("chip_bathroom", GlobalUtils.getString(context, R.string.def_node_bathroom_chip)));
             obj.put("auto_start_night_mode", preference.getBoolean("sw_auto_start", false));
@@ -472,6 +508,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     public void updateOnUIThread(String str) {
+        Log.d("net message", str);
         runOnUiThread(new UpdateUIRunnable(str));
     }
 
@@ -515,7 +552,7 @@ public class FullscreenActivity extends AppCompatActivity {
         try {
             JSONObject clientRequest = new JSONObject(data);
             if (clientRequest.has("cmd")) {
-                int cmd = Integer.parseInt(clientRequest.optString("cmd", "0"), 16);
+                int cmd = clientRequest.optInt("cmd", 0);
                 if (clientRequest.has("json")) {
                     JSONObject json = clientRequest.optJSONObject("json");
                     externalCMD(cmd, json);
@@ -529,7 +566,7 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     // ===================================
-    private void externalCMD(int cmd, JSONObject json) {
+    private void externalCMD(int cmd, @NonNull JSONObject json) {
         Toast.makeText(getBaseContext(), "Transmitted External Command  | DEC • " + cmd + " | " + json.toString(), Toast.LENGTH_SHORT).show();
         switch (cmd) {
             case Constants.CMD_BACK_LIGHT:
@@ -659,42 +696,102 @@ public class FullscreenActivity extends AppCompatActivity {
         back_pressed = System.currentTimeMillis();
     }
 
-    private void backMain() {
-        Intent intent = getPackageManager().getLaunchIntentForPackage(Constants.PACKAGES[0]);
-        if (intent != null) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-            // Bundle is optional --------------
-//            Bundle bundle = new Bundle();
-//            bundle.putInt("lastCMD", lastCMD);
-//            intent.putExtras(bundle);
-            //  end Bundle ---------------------
-            startActivity(intent);
-            View splash = findViewById(R.id.splash);
-            if (splash.getVisibility() == View.GONE) {
-                splash.setVisibility(View.VISIBLE);
+    // ===================================
+    public void swapScreen() {
+        cur_screen++;
+        if (cur_screen >= Constants.SWAP_APPS.length) {
+            cur_screen = 0;
+        }
+        System.out.println("traceSW | Swap Screen | Cur_screen = " + String.valueOf(cur_screen));
+        new Handler().post(new UpdateUIRunnable(Constants.SWAP_APPS[cur_screen]));
+        SysUtils.setBackLight(this, true);
+    }
+
+    // ===================================
+    private void runKillAllProcess() {
+        SysUtils.killAllProcess(this);
+        nextKill = false;
+        // all processes are already killed ---------------
+    }
+
+    // ===================================
+    private void syncData() {
+        boolean night = SysUtils.isNight(
+                preference.getString("start_day", "6"),
+                preference.getString("start_night", "20"));
+
+        if (night) {
+            // ***********************************************
+            // set backLight should work in a separate thread
+            // working if Auto Set Backlight Screen is enabled
+            // ***********************************************
+            if (preference.getBoolean("sw_back_light", false)) {
+                updateOnUIThread("{cmd:4,json:{state:true}}");
+            }
+        } else {
+            startTimer();
+            if (preference.getBoolean("sw_back_light", false)) {
+                updateOnUIThread("{cmd:4,json:{state:false}}");
             }
         }
     }
 
     // ===================================
-    private void restartApp(String nextApp) {
-        // reboot main application & load next app
-        Context context = getApplicationContext();
-        Intent mStartActivity = new Intent(context, FullscreenActivity.class);
-        mStartActivity.putExtra("next_app", nextApp);
-        mStartActivity.putExtra("next_kill", nextKill);
-        int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
-        PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-        System.exit(0);
+    // Swap Screen Timer
+    // ===================================
+
+    // ===================================
+    private void startTimer() {
+        // ***********************************************
+        // work if Auto Swap Screens is enabled
+        // only during the daytime 
+        // ***********************************************
+        if (preference.getBoolean("sw_swap", true)) {
+            if (SysUtils.isNight(
+                    preference.getString("start_day", "6"),
+                    preference.getString("start_night", "20"))) {
+                System.out.println("traceSW | Next stopTimer");
+                stopTimer();
+                new Handler().post(new UpdateUIRunnable(Constants.CMD_LOAD_TIMER));
+            } else {
+                if (timer == null) {
+                    System.out.println("traceSW | startTimer");
+                    String tempNumStr = preference.getString("swap_frequency", "1");
+                    int swap_frequency = Integer.parseInt(tempNumStr) * 60000;
+                    timer = new Timer();
+                    swapTimerTask = new SwapTimerTask();
+                    timer.schedule(swapTimerTask, 60000, swap_frequency);
+                }
+            }
+        }
     }
 
     // ===================================
-    private void runKillAllProcess() {
-        nextKill = !SysUtils.killAllProcess(this);
-        // all processes are already killed ---------------
+    private void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+            swapTimerTask = null;
+        }
+    }
+
+    // ===================================
+    class SwapTimerTask extends TimerTask {
+        @Override
+        public void run() {
+
+            // --------------------------
+            runOnUiThread(new Runnable() {
+                // Отображаем информацию в текстовом поле count:
+                @Override
+                public void run() {
+                    swapScreen();
+                }
+            });
+        }
     }
 }
+
+//    getWindow().setFlags(
+//        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+//        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);

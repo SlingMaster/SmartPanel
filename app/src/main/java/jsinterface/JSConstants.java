@@ -18,8 +18,9 @@ public class JSConstants {
     public static final int EVT_MAIN_TEST = 0;
     public static final int EVT_READY = 1;
     public static final int EVT_BACK = 4;
-
+    public static final int EVT_SYNC = 5;
     // events from ui app client --
+
     public static final int EVT_WEATHER = 5000;
 //    public static final int EVT_UI_PROJECT = 21;
 //    public static final int EVT_UI_RETURN = 22;

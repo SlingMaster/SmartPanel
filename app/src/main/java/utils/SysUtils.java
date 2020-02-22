@@ -19,9 +19,28 @@ import android.widget.Toast;
 
 import com.jsc.smartpanel.FullscreenActivity;
 
+import java.util.Calendar;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+
 public class SysUtils {
+
+    // ===================================
+    public static long getFreeMemory(Activity mainActivity) {
+        ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+        ActivityManager activityManager = (ActivityManager) mainActivity.getSystemService(Context.ACTIVITY_SERVICE);
+        try {
+            activityManager.getMemoryInfo(memoryInfo);
+            return memoryInfo.availMem / 1048576;
+            //  memoryInfo.totalMem
+        } catch (NullPointerException e) {
+            System.out.println("NullPointerException occurred");
+            return 0;
+        }
+    }
+
+    // ===================================
     public static void setBackLight(Activity mainActivity, Boolean sleep_mode) {
         WindowManager.LayoutParams layout = mainActivity.getWindow().getAttributes();
         if (sleep_mode) {
@@ -34,7 +53,7 @@ public class SysUtils {
     }
 
     // ===================================
-    public static boolean killAllProcess(Activity mainActivity) {
+    public static void killAllProcess(Activity mainActivity) {
         List<ApplicationInfo> packages;
         Context context = mainActivity.getApplicationContext();
         PackageManager pm;
@@ -56,7 +75,6 @@ public class SysUtils {
             mActivityManager.killBackgroundProcesses(packageInfo.packageName);
         }
         Toast.makeText(mainActivity, "Killed All Background Process", Toast.LENGTH_SHORT).show();
-        return true;
     }
 
     // ===================================
@@ -65,6 +83,7 @@ public class SysUtils {
         Context context = mainActivity.getApplicationContext();
         Intent mStartActivity = new Intent(context, FullscreenActivity.class);
         int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
+//        mStartActivity.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
@@ -83,6 +102,49 @@ public class SysUtils {
         AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
         System.exit(0);
+    }
+
+    // ===================================
+    public static boolean isNight(String startDay, String startNight) {
+//        // get the supported ids for GMT-08:00 (Pacific Standard Time)
+//        String[] ids = TimeZone.getAvailableIDs(-8 * 60 * 60 * 1000);
+//        // if no ids were returned, something is wrong. get out.
+//        if (ids.length == 0)
+//            System.exit(0);
+//
+//        // begin output
+//        System.out.println("Current Time");
+//
+//        // create a Pacific Standard Time time zone
+//        SimpleTimeZone pdt = new SimpleTimeZone(+3 * 60 * 60 * 1000, ids[0]);
+//
+//        // set up rules for daylight savings time
+//        pdt.setStartRule(Calendar.MARCH, 2, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
+//        pdt.setEndRule(Calendar.NOVEMBER, 1, Calendar.SUNDAY, 2 * 60 * 60 * 1000);
+//
+//        // create a GregorianCalendar with the Pacific Daylight time zone
+//        // and the current date and time
+//        Calendar calendar = new GregorianCalendar(pdt);
+//        Date curTime = new Date();
+//        calendar.setTime(curTime);
+        // int hh = calendar.get(Calendar.HOUR);
+
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.set(Calendar.HOUR_OF_DAY, 24);
+//        int hh = calendar.get(Calendar.HOUR);
+        int pm = Calendar.getInstance().get(Calendar.AM_PM);
+        int hh = Calendar.getInstance().get(Calendar.HOUR) + pm * 12;
+        int start_day = Integer.parseInt(startDay);
+        int start_night = Integer.parseInt(startNight);
+
+
+
+//        if (hh >= start_night || hh < start_day) {
+//            System.out.println("traceSW |" + hh + " >= " + start_night + " It's Night now");
+//        } else {
+//            System.out.println("traceSW |" + hh + " >= " + start_night + " It's Day now");
+//        }
+        return (hh >= start_night || hh < start_day);
     }
 
     // ===================================
@@ -108,5 +170,25 @@ public class SysUtils {
 //            System.out.println(" trace | App " + packageName + " not instaled");
 //        }
 //        return false;
+//    }
+
+    // ===================================
+//    private void backMain() {
+//        Intent intent = getPackageManager().getLaunchIntentForPackage(Constants.PACKAGES[0]);
+//        if (intent != null) {
+//            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//            // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+//            // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+//            // Bundle is optional --------------
+////            Bundle bundle = new Bundle();
+////            bundle.putInt("lastCMD", lastCMD);
+////            intent.putExtras(bundle);
+//            //  end Bundle ---------------------
+//            startActivity(intent);
+//            View splash = findViewById(R.id.splash);
+//            if (splash.getVisibility() == View.GONE) {
+//                splash.setVisibility(View.VISIBLE);
+//            }
+//        }
 //    }
 }

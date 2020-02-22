@@ -19,7 +19,11 @@ import android.view.View;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GlobalUtils {

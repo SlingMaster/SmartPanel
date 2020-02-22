@@ -4,8 +4,8 @@
   ~ Design and Programming by Alex Dovby
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-<!--    <PreferenceCategory android:title="@string/pref_group_title_schedule" />-->
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="@string/empty">
 
     </PreferenceCategory>
@@ -13,13 +13,13 @@
         android:icon="@drawable/ic_grp_schedule"
         android:title="@string/pref_group_title_schedule" />
     <SwitchPreference
-        android:defaultValue="false"
+        android:defaultValue="true"
         android:icon="@drawable/ic_night_mode"
         android:key="sw_auto_start"
         android:summary="@string/pref_schedule_auto_desc"
         android:title="@string/pref_schedule_auto_title" />
     <SwitchPreference
-        android:defaultValue="false"
+        android:defaultValue="true"
         android:icon="@drawable/ic_light"
         android:key="sw_back_light"
         android:summary="@string/pref_schedule_backlight_desc"
@@ -32,7 +32,8 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:summary="@string/pref_schedule_day_desc"
-        android:title="@string/pref_schedule_day_title" />
+        android:title="@string/pref_schedule_day_title"
+        app:defaultValue="@string/pref_schedule_def_start_day" />
     <EditTextPreference
         android:icon="@drawable/ic_night"
         android:inputType="numberDecimal"
@@ -41,7 +42,8 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:summary="@string/pref_schedule_night_desc"
-        android:title="@string/pref_schedule_night_title" />
+        android:title="@string/pref_schedule_night_title"
+        app:defaultValue="@string/pref_schedule_def_start_night" />
     <SwitchPreference
         android:defaultValue="true"
         android:icon="@drawable/ic_swap"
@@ -49,7 +51,7 @@
         android:summary="@string/pref_schedule_swap_desc"
         android:title="@string/pref_schedule_swap_title" />
     <ListPreference
-        android:defaultValue="@string/pref_schedule_def_frequency"
+        android:defaultValue="false"
         android:dependency="sw_swap"
         android:entries="@array/pref_schedule_frequency_titles"
         android:entryValues="@array/pref_schedule_frequency_values"
