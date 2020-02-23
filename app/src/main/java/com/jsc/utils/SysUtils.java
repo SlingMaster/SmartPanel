@@ -28,12 +28,10 @@ public class SysUtils {
     public static long getFreeMemory(Activity mainActivity) {
         ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
         ActivityManager activityManager = (ActivityManager) mainActivity.getSystemService(Context.ACTIVITY_SERVICE);
-        try {
+        if (activityManager != null) {
             activityManager.getMemoryInfo(memoryInfo);
             return memoryInfo.availMem / 1048576;
-            //  memoryInfo.totalMem
-        } catch (NullPointerException e) {
-            System.out.println("NullPointerException occurred");
+        } else {
             return 0;
         }
     }
@@ -60,7 +58,7 @@ public class SysUtils {
         //get a list of installed apps ---------------
         packages = pm.getInstalledApplications(0);
 
-        ActivityManager mActivityManager = (ActivityManager) mainActivity.getSystemService(Context.ACTIVITY_SERVICE);
+        ActivityManager activityManager = (ActivityManager) mainActivity.getSystemService(Context.ACTIVITY_SERVICE);
         String myPackage = context.getApplicationContext().getPackageName();
 
         for (ApplicationInfo packageInfo : packages) {
@@ -70,9 +68,12 @@ public class SysUtils {
             if (packageInfo.packageName.equals(myPackage)) {
                 continue;
             }
-            mActivityManager.killBackgroundProcesses(packageInfo.packageName);
+            if (activityManager != null) {
+                activityManager.killBackgroundProcesses(packageInfo.packageName);
+                Toast.makeText(mainActivity, "Killed All Background Process", Toast.LENGTH_SHORT).show();
+            }
         }
-        Toast.makeText(mainActivity, "Killed All Background Process", Toast.LENGTH_SHORT).show();
+
     }
 
     // ===================================
@@ -83,9 +84,11 @@ public class SysUtils {
         int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
 //        mStartActivity.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-        System.exit(0);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+            System.exit(0);
+        }
     }
 
     // ===================================
@@ -97,9 +100,11 @@ public class SysUtils {
         mStartActivity.putExtra("next_kill", nextKill);
         int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
-        System.exit(0);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+            System.exit(0);
+        }
     }
 
     // ===================================
@@ -125,23 +130,12 @@ public class SysUtils {
 //        Calendar calendar = new GregorianCalendar(pdt);
 //        Date curTime = new Date();
 //        calendar.setTime(curTime);
-        // int hh = calendar.get(Calendar.HOUR);
-
-//        Calendar calendar = Calendar.getInstance();
 //        calendar.set(Calendar.HOUR_OF_DAY, 24);
-//        int hh = calendar.get(Calendar.HOUR);
+
         int pm = Calendar.getInstance().get(Calendar.AM_PM);
         int hh = Calendar.getInstance().get(Calendar.HOUR) + pm * 12;
         int start_day = Integer.parseInt(startDay);
         int start_night = Integer.parseInt(startNight);
-
-
-
-//        if (hh >= start_night || hh < start_day) {
-//            System.out.println("traceSW |" + hh + " >= " + start_night + " It's Night now");
-//        } else {
-//            System.out.println("traceSW |" + hh + " >= " + start_night + " It's Day now");
-//        }
         return (hh >= start_night || hh < start_day);
     }
 

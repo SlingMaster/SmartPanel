@@ -5,13 +5,9 @@
  */
 
 package com.jsc.smartpanel;
-// @SuppressWarnings("WeakerAccess")
-
-import java.lang.reflect.Array;
 
 public class Constants {
     static final int SERVER_PORT = 8080;
-    static final int MAX_SCR = 2;
     // public static final int PERMISSION_REQUEST_CODE = 101;
     // public static final int PERMISSION_CHANGE_TIMEOUT = 10000;
 
