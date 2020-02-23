@@ -7,7 +7,6 @@
 
 package com.jsc.smartpanel;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,9 +18,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,10 +37,12 @@ import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import jsinterface.JSConstants;
-import jsinterface.JSOut;
-import utils.GlobalUtils;
-import utils.SysUtils;
+
+import com.jsc.smartpanel.html.CustomWebView;
+import com.jsc.smartpanel.html.JSConstants;
+
+import com.jsc.utils.GlobalUtils;
+import com.jsc.utils.SysUtils;
 
 public class FullscreenActivity extends AppCompatActivity {
 
@@ -52,25 +51,16 @@ public class FullscreenActivity extends AppCompatActivity {
     Timer timer;
     TimerTask swapTimerTask;
 
-    //    private TimerInterval swapScreenTimer;
     private View mControlsView;
-    WebView webView;
+    CustomWebView webView;
 
     private long back_pressed;
-    private boolean Night = false;
     private int cur_screen = 0;
     private int lastCMD = 0;
     private String nextApp;
     private Boolean nextKill;
     private String currentApp;
     private boolean mVisible;
-
-    // js interface ------------
-    protected JSOut jsOut;
-    public static JSONObject uiRequest;
-    public static JSONObject sendData;
-    // -------------------------
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,9 +116,7 @@ public class FullscreenActivity extends AppCompatActivity {
         // ------------------------------------
         webView = findViewById(R.id.web_view);
         webView.setOnClickListener(view -> toggle());
-        webView.setWebViewClient(new NocWebViewClient());
-        // A/libc: Fatal signal 11 (SIGSEGV) at 0x002d0027 (code=1)
-        webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        webView.setWebEventsListener(this::webViewEvents);
 
         // ---------------------------------------------------
         externalCMD(Constants.CMD_LOAD_TIMER);
@@ -136,7 +124,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // set listeners for all buttons -------------------
     private void setupClickListeners() {
-        // show splash activity ------------------------
+        // show splash ------------------------
         findViewById(R.id.btnShowCtrl).setOnClickListener(view -> {
             View splash = findViewById(R.id.splash);
             if (splash.getVisibility() == View.VISIBLE) {
@@ -162,29 +150,6 @@ public class FullscreenActivity extends AppCompatActivity {
         findViewById(R.id.icon8).setOnClickListener(view -> externalCMD(Constants.CMD_WIFI_SCANNER));
     }
 
-    // ==============================================
-    // Loading a page with a self-signed certificate
-    // ==============================================
-    private class NocWebViewClient extends WebViewClient {
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            System.out.println("[ trace  ] onPage Finished : " + url);
-
-            // ----------------------------------------
-            new android.os.Handler().postDelayed(
-                    new Runnable() {
-                        public void run() {
-                            View splash = findViewById(R.id.splash);
-                            if (splash.getVisibility() == View.VISIBLE) {
-                                splash.setVisibility(View.GONE);
-                            }
-                            runKillAllProcess();
-                        }
-                    }, 1000);
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -202,13 +167,6 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // save state app -----------------
-        // outState.putDouble(BILL_TOTAL, currentBillTotal);
-    }
-
-    @Override
     protected void onStop() {
         stopTimer();
         super.onStop();
@@ -217,6 +175,7 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         System.out.println("trace • onDestroy");
+        webView.setWebEventsListener(null);
         stopTimer();
         communicationServer.stop();
         super.onDestroy();
@@ -238,25 +197,15 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     }
 
-    @SuppressLint("addJavascriptInterface")
     // ----------------------------------------
     protected void loadHtml(String url) {
         String root = preference.getBoolean("sw_debug_mode", false)
                 ? getResources().getString(R.string.root_debug) :
                 getResources().getString(R.string.root);
-        WebView webView = findViewById(R.id.web_view);
         boolean clear_cache = preference.getBoolean("sw_clear_cache", false);
         if (clear_cache) {
             webView.clearCache(true);
         }
-
-        // ********************************
-        // should solve the problem
-        // SIGNAL 11 SIGSEGV crash Android
-        // !!! пока не помогло переодически app валится
-        webView.clearCache(true);
-        webView.destroyDrawingCache();
-        // ********************************
 
         String msg = "FREE RAM before : " + SysUtils.getFreeMemory(this) + " Mb\n";
         webView.loadUrl(root + url);
@@ -269,11 +218,6 @@ public class FullscreenActivity extends AppCompatActivity {
         TextView textInfo = findViewById(R.id.memInfo);
         textInfo.setText(msg);
         // ********************************
-
-        // js interface --------------------------------------
-        jsOut = new JSOut(webView);
-        JSIn jsIn = new JSIn();
-        webView.addJavascriptInterface(jsIn, JSConstants.INTERFACE_NAME);
     }
 
     // ===================================================
@@ -296,6 +240,7 @@ public class FullscreenActivity extends AppCompatActivity {
     public void webViewEvents(int request, final String jsonString) {
         JSONObject requestContent = new JSONObject();
 
+        JSONObject uiRequest;
         try {
             uiRequest = new JSONObject(jsonString);
             if (uiRequest.has("request")) {
@@ -310,62 +255,32 @@ public class FullscreenActivity extends AppCompatActivity {
 
         switch (request) {
             case JSConstants.EVT_MAIN_TEST:
-                callbackToUI(JSConstants.EVT_MAIN_TEST, createResponse(requestContent, null));
+                webView.callbackToUI(JSConstants.EVT_MAIN_TEST, createResponse(requestContent, null));
                 break;
             case JSConstants.EVT_READY:
-                callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, initData(this)));
+                webView.callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, initData(this)));
                 break;
             case JSConstants.EVT_WEATHER:
                 String list_url = getResources().getString(R.string.weather_xml);
                 new ReadXmlTask(this, list_url).execute();
                 break;
             case JSConstants.EVT_NEXT:
-//               startTimer();
-//                if (Night) {
-////                    return;
-////                }
-////                cur_screen++;
-////                if (cur_screen > Constants.MAX_SCR) {
-////                    cur_screen = 1;
-////                }
-////                if (preference.getBoolean("sw_swap", false)) {
-////                    System.out.println("trace | Cur_screen = " + String.valueOf(cur_screen));
-////                    switch (cur_screen) {
-////                        case 1:
-////                            external_cmd = Constants.CMD_LOAD_TIMER;
-////                            break;
-////                        case 2:
-//////                            external_cmd = Constants.CMD_LOAD_WEATHER;
-////                            external_cmd = Constants.CMD_LOAD_SMART;
-////                            break;
-////                        default:
-////                            external_cmd = 0;
-////                            break;
-////                    }
-////                    System.out.println("trace   | external_cmd = " + external_cmd + " | jsonString:" + jsonString);
-//////                    return;
-////                }
                 break;
             case JSConstants.EVT_BACK_LIGHT:
-//                if (preference.getBoolean("sw_back_light", false)) {
-//                    SysUtils.setBackLight(this, requestContent.optBoolean("sleep_mode", false));
-//                }
                 break;
             case JSConstants.EVT_SYNC:
                 syncData();
                 break;
             case JSConstants.EVT_NIGHT_MODE:
-//                 ??? error weather ======
-//                syncData();
-//                Night = requestContent.optBoolean("state", false);
-//                external_cmd = Night ? Constants.CMD_LOAD_TIMER : Constants.CMD_LOAD_WEATHER;
-//                System.out.println("trace   | Night: " + Night + " CMD : " + external_cmd);
                 break;
             case JSConstants.EVT_BACK:
                 break;
             case JSConstants.EVT_EXIT:
                 break;
             case JSConstants.EVT_EXO_RESPONSE:
+                break;
+            case JSConstants.EVT_PAGE_FINISHED:
+                onPageFinished();
                 break;
             default:
                 // external_cmd = 0;
@@ -408,37 +323,20 @@ public class FullscreenActivity extends AppCompatActivity {
         return obj;
     }
 
-    // =========================================================
-    // Interface HTML > Application
-    // =========================================================
-    private class JSIn {
-
-        // @SuppressLint("callNative")
-        @JavascriptInterface
-        public final void callNative(int request, final String jsonString) {
-            // HTML function send data to application -----------------------------
-            webViewEvents(request, jsonString);
-        }
+    void onPageFinished() {
+        // ----------------------------------------
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        View splash = findViewById(R.id.splash);
+                        if (splash.getVisibility() == View.VISIBLE) {
+                            splash.setVisibility(View.GONE);
+                        }
+                        runKillAllProcess();
+                    }
+                }, 1000);
     }
 
-    // ----------------------------------------
-    // command only ---------------------------
-    protected void callbackToUI(int target) {
-        if (jsOut != null) {
-            jsOut.callJavaScript(target, createResponse(null, null));
-        } else {
-            System.out.println("trace | Error Missing JSInterface");
-        }
-    }
-
-    // ----------------------------------------
-    protected void callbackToUI(int target, JSONObject json) {
-        if (jsOut != null) {
-            jsOut.callJavaScript(target, json);
-        } else {
-            System.out.println("trace | Error Missing JSInterface");
-        }
-    }
 
     // =========================================================
     // Read XML Weather
@@ -498,11 +396,11 @@ public class FullscreenActivity extends AppCompatActivity {
             // get a reference to the activity if it is still there
             FullscreenActivity activity = activityReference.get();
             try {
-                sendData = XML.toJSONObject(strXML);
+                JSONObject sendData = XML.toJSONObject(strXML);
+                activity.webView.callbackToUI(JSConstants.CMD_WEATHER_DATA, activity.createResponse(null, sendData));
             } catch (JSONException e) {
                 System.out.println("Unexpected JSON exception" + e);
             }
-            activity.callbackToUI(JSConstants.CMD_WEATHER_DATA, activity.createResponse(uiRequest, sendData));
         }
     }
 
@@ -618,7 +516,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 runApplication(2, cmd);
                 break;
             case Constants.CMD_TIMER_SWAP:
-                callbackToUI(JSConstants.CMD_SWAP);
+                webView.callbackToUI(JSConstants.CMD_SWAP);
                 break;
 
             // weather forecast ----------
@@ -626,10 +524,10 @@ public class FullscreenActivity extends AppCompatActivity {
                 runApplication(3, cmd);
                 break;
             case Constants.CMD_WEATHER_FORECAST:
-                callbackToUI(JSConstants.CMD_SWAP);
+                webView.callbackToUI(JSConstants.CMD_SWAP);
                 break;
             case Constants.CMD_WEATHER_MAGIC:
-                callbackToUI(JSConstants.CMD_SEASON_MAGIC);
+                webView.callbackToUI(JSConstants.CMD_SEASON_MAGIC);
                 break;
             // --------------------------
 
@@ -791,7 +689,3 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     }
 }
-
-//    getWindow().setFlags(
-//        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-//        WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);

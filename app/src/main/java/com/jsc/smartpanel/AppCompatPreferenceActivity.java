@@ -23,7 +23,7 @@ import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatDelegate;
-import utils.GlobalUtils;
+import com.jsc.utils.GlobalUtils;
 
 /**
  * A {@link android.preference.PreferenceActivity} which implements and proxies the necessary calls
