@@ -70,10 +70,9 @@ public class SysUtils {
             }
             if (activityManager != null) {
                 activityManager.killBackgroundProcesses(packageInfo.packageName);
-                Toast.makeText(mainActivity, "Killed All Background Process", Toast.LENGTH_SHORT).show();
             }
         }
-
+        Toast.makeText(mainActivity, "Killed All Background Process", Toast.LENGTH_SHORT).show();
     }
 
     // ===================================
