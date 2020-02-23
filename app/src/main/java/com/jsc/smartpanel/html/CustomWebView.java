@@ -3,19 +3,32 @@
  * Jeneral Samopal Company
  * Programming by Alex Uchitel
  */
-package com.jsc.smartpanel;
+package com.jsc.smartpanel.html;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
-import androidx.annotation.RequiresApi;
+
+import androidx.annotation.Nullable;
 import android.util.AttributeSet;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-class CustomWebView extends WebView {
+import org.json.JSONObject;
+
+public class CustomWebView extends WebView {
+    public interface WebEvents {
+        void webViewEvents(int request, final String jsonString);
+    }
+
+    @Nullable
+    private WebEvents webListener = null;
+
+    protected JSOut jsOut;
+
     public CustomWebView(Context context) {
         super(context);
         init();
@@ -36,12 +49,7 @@ class CustomWebView extends WebView {
 //      init();
 //    }
 
-    public CustomWebView(Context context, AttributeSet attrs, int defStyleAttr, boolean privateBrowsing) {
-        super(context, attrs, defStyleAttr, privateBrowsing);
-        init();
-    }
-
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     private void init() {
         // set WebView Style background and scrollbar ----
         setVerticalScrollBarEnabled(false);
@@ -66,17 +74,6 @@ class CustomWebView extends WebView {
         // определим экземпляр MyWebViewClient.
         // Он может находиться в любом месте после инициализации объекта WebView
         setWebViewClient(new MyWebViewClient());
-//        webView.setWebChromeClient(new WebChromeClient() {
-//            @Override
-//            public void onProgressChanged(WebView view, int newProgress) {
-//                //change your progress bar
-//                Log.w(TAG, "onProgressChanged : " + newProgress + "%");
-//                if (newProgress > 50) {
-//                    //progressBar.setVisibility(View.GONE);
-//                    webView.setVisibility(View.VISIBLE);
-//                }
-//            }
-//        });
 
         webSettings.setSupportZoom(false);
         webSettings.setBuiltInZoomControls(false);
@@ -90,16 +87,66 @@ class CustomWebView extends WebView {
         webSettings.setUseWideViewPort(true);
         webSettings.setLoadWithOverviewMode(true);
 
+        JSIn jsIn = new JSIn();
+        addJavascriptInterface(jsIn, JSConstants.INTERFACE_NAME);
+
+        // js interface --------------------------------------
+        jsOut = new JSOut(this);
     }
 
     // ----------------------------------------
     private class MyWebViewClient extends WebViewClient {
-        //        @TargetApi(19)
-        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            view.loadUrl(request.getUrl().toString());
-            return true;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                view.loadUrl(request.getUrl().toString());
+            }
+            return super.shouldOverrideUrlLoading(view, request);
+        }
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            System.out.println("[ trace  ] onPage Finished : " + url);
+            final WebEvents listener = webListener;
+            if(listener!=null) {
+                listener.webViewEvents(JSConstants.EVT_PAGE_FINISHED, "{}");
+            }
+        }
+    }
+
+    public void setWebEventsListener(@Nullable WebEvents listener) {
+        webListener = listener;
+    }
+
+    // command only ---------------------------
+    public void callbackToUI(int target) {
+        if (jsOut != null) {
+            jsOut.callJavaScript(target, new JSONObject());
+        } else {
+            System.out.println("trace | Error Missing JSInterface");
+        }
+    }
+
+    // ----------------------------------------
+    public void callbackToUI(int target, JSONObject json) {
+        if (jsOut != null) {
+            jsOut.callJavaScript(target, json);
+        } else {
+            System.out.println("trace | Error Missing JSInterface");
+        }
+    }
+
+    // =========================================================
+    // Interface HTML > Application
+    // =========================================================
+    private class JSIn {
+        @JavascriptInterface
+        public final void callNative(int request, final String jsonString) {
+            // HTML function send data to activity -----------------------------
+            final WebEvents listener = webListener;
+            if(listener!=null) {
+                listener.webViewEvents(request, jsonString);
+            }
         }
     }
 }

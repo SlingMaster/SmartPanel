@@ -1,4 +1,4 @@
-package jsinterface;
+package com.jsc.smartpanel.html;
 
 import android.util.Log;
 import android.webkit.WebView;

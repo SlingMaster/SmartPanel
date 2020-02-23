@@ -4,7 +4,7 @@
  * Design and Programming by Alex Dovby
  */
 
-package utils;
+package com.jsc.utils;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -21,8 +21,6 @@ import com.jsc.smartpanel.FullscreenActivity;
 
 import java.util.Calendar;
 import java.util.List;
-
-import androidx.annotation.NonNull;
 
 public class SysUtils {
 

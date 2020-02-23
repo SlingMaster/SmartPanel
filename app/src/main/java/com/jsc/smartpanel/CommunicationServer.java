@@ -54,7 +54,7 @@ class CommunicationServer {
                     SessionRunnable sessionRunnable = new SessionRunnable(socket);
                     new Thread(sessionRunnable).start();
                 } catch (IOException e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 }
             }
         }

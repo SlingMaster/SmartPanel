@@ -22,12 +22,12 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <com.jsc.smartpanel.CustomWebView
+        <com.jsc.smartpanel.html.CustomWebView
             android:id="@+id/web_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
 
-        </com.jsc.smartpanel.CustomWebView>
+        </com.jsc.smartpanel.html.CustomWebView>
     </LinearLayout>
 
     <LinearLayout

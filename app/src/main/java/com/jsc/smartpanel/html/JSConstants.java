@@ -4,7 +4,7 @@
  * Design and Programming by Alex Dovby
  */
 
-package jsinterface;
+package com.jsc.smartpanel.html;
 
 public class JSConstants {
     // ---------------------------------------------
@@ -59,4 +59,5 @@ public class JSConstants {
     public static final int CMD_EXO = 700;
     public static final int EVT_EXO = 777;
     public static final int EVT_EXO_RESPONSE = 888;
+    public static final int EVT_PAGE_FINISHED = 889;
 }
