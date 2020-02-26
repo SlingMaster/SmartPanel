@@ -7,13 +7,13 @@
 
 package com.jsc.smartpanel;
 
-import androidx.annotation.NonNull;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import androidx.annotation.NonNull;
 
 class CommunicationServer {
     private FullscreenActivity activity;
@@ -122,7 +122,7 @@ class CommunicationServer {
     }
 
     void updatePort(int port) {
-        if(port>0)
+        if (port > 0)
             serverRunnable.updatePort(port);
     }
 }

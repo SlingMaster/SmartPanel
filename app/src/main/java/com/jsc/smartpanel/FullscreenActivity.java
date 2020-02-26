@@ -18,9 +18,13 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.WebView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.jsc.smartpanel.html.CustomWebView;
+import com.jsc.smartpanel.html.JSConstants;
+import com.jsc.utils.GlobalUtils;
+import com.jsc.utils.SysUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,12 +41,6 @@ import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.jsc.smartpanel.html.CustomWebView;
-import com.jsc.smartpanel.html.JSConstants;
-
-import com.jsc.utils.GlobalUtils;
-import com.jsc.utils.SysUtils;
 
 public class FullscreenActivity extends AppCompatActivity {
 
@@ -117,8 +115,10 @@ public class FullscreenActivity extends AppCompatActivity {
         webView = findViewById(R.id.web_view);
         webView.setOnClickListener(view -> toggle());
         webView.setWebEventsListener(this::webViewEvents);
+        // SIGNAL 11 SIGSEGV crash Android
+        webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
-        // ---------------------------------------------------
+        // ------------------------------------
         externalCMD(Constants.CMD_LOAD_TIMER);
     }
 
@@ -207,16 +207,21 @@ public class FullscreenActivity extends AppCompatActivity {
             webView.clearCache(true);
         }
 
-        String msg = "FREE RAM before : " + SysUtils.getFreeMemory(this) + " Mb\n";
+        // ********************************
+        // this solved the problem
+        // SIGNAL 11 SIGSEGV crash Android
+        webView.freeMemory();
+        // ********************************
+
         webView.loadUrl(root + url);
 
         // ********************************
         // this code must remove after debug
         // ********************************
         // memory leak --------------------
-        msg = msg + "after : " + SysUtils.getFreeMemory(this) + " Mb";
+        String msgMemory = "FREE RAM : " + SysUtils.getFreeMemory(this) + " Mb";
         TextView textInfo = findViewById(R.id.memInfo);
-        textInfo.setText(msg);
+        textInfo.setText(msgMemory);
         // ********************************
     }
 
@@ -261,35 +266,25 @@ public class FullscreenActivity extends AppCompatActivity {
                 webView.callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, initData(this)));
                 break;
             case JSConstants.EVT_WEATHER:
-                String list_url = getResources().getString(R.string.weather_xml);
-                new ReadXmlTask(this, list_url).execute();
+                new ReadXmlTask(this, getResources().getString(R.string.weather_xml)).execute();
                 break;
             case JSConstants.EVT_NEXT:
-                break;
-            case JSConstants.EVT_BACK_LIGHT:
                 break;
             case JSConstants.EVT_SYNC:
                 syncData();
                 break;
-            case JSConstants.EVT_NIGHT_MODE:
+            case JSConstants.EVT_WOKE_UP:
+                updateOnUIThread("{cmd:" + Constants.CMD_LOAD_WEATHER + "}");
                 break;
             case JSConstants.EVT_BACK:
-                break;
-            case JSConstants.EVT_EXIT:
-                break;
-            case JSConstants.EVT_EXO_RESPONSE:
                 break;
             case JSConstants.EVT_PAGE_FINISHED:
                 onPageFinished();
                 break;
             default:
-                // external_cmd = 0;
+                System.out.println("Unsupported command : " + request);
                 break;
         }
-//        System.out.println("trace   | external_cmd = " + external_cmd + " | jsonString:" + jsonString);
-//        if (external_cmd > 0) {
-//            new Handler().post(new UpdateUIRunnable(external_cmd));
-//        }
     }
 
     // ----------------------------------------
@@ -397,7 +392,9 @@ public class FullscreenActivity extends AppCompatActivity {
             FullscreenActivity activity = activityReference.get();
             try {
                 JSONObject sendData = XML.toJSONObject(strXML);
-                activity.webView.callbackToUI(JSConstants.CMD_WEATHER_DATA, activity.createResponse(null, sendData));
+                if (sendData != null) {
+                    activity.webView.callbackToUI(JSConstants.CMD_WEATHER_DATA, activity.createResponse(null, sendData));
+                }
             } catch (JSONException e) {
                 System.out.println("Unexpected JSON exception" + e);
             }
@@ -453,7 +450,9 @@ public class FullscreenActivity extends AppCompatActivity {
                 int cmd = clientRequest.optInt("cmd", 0);
                 if (clientRequest.has("json")) {
                     JSONObject json = clientRequest.optJSONObject("json");
-                    externalCMD(cmd, json);
+                    if (json != null) {
+                        externalCMD(cmd, json);
+                    }
                 } else {
                     externalCMD(cmd);
                 }
@@ -602,7 +601,6 @@ public class FullscreenActivity extends AppCompatActivity {
         }
         System.out.println("traceSW | Swap Screen | Cur_screen = " + String.valueOf(cur_screen));
         new Handler().post(new UpdateUIRunnable(Constants.SWAP_APPS[cur_screen]));
-        SysUtils.setBackLight(this, true);
     }
 
     // ===================================
@@ -680,7 +678,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
             // --------------------------
             runOnUiThread(new Runnable() {
-                // Отображаем информацию в текстовом поле count:
                 @Override
                 public void run() {
                     swapScreen();
