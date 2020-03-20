@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (c) 2019.
-  ~ RF Controls
+  ~ Copyright (c) 2020.
+  ~ Jeneral Samopal Company
   ~ Design and Programming by Alex Dovby
   -->
 	<selector xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:state_enabled="false" android:color="#3362727b"/>
-    <item android:color="#FF62727b"/>
+    <item android:state_enabled="false" android:color="#7Fa7c0cd"/>
+<!--    <item android:color="#FF62727b"/>8fa3ad-->
+    <item android:color="#FFa7c0cd"/>
 </selector>
 

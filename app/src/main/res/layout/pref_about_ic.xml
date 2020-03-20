@@ -1,6 +1,6 @@
 <!--
   ~ Copyright (c) 2020.
-  ~ RF Controls
+  ~ Jeneral Samopal Company
   ~ Design and Programming by Alex Dovby
   -->
 
@@ -8,7 +8,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:foreground="@drawable/btn_sling"
-    android:foregroundGravity="center_vertical|center_horizontal"
+    android:foreground="@drawable/ic_about"
+    android:foregroundGravity="center_vertical"
     android:keepScreenOn="false"
+    android:minWidth="@android:dimen/thumbnail_width"
     tools:context="com.jsc.smartpanel.FullscreenActivity" />

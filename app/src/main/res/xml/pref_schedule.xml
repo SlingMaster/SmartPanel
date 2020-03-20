@@ -1,14 +1,12 @@
-<!--
-  ~ Copyright (c) 2019.
-  ~ RF Controls
+ <!--
+  ~ Copyright (c) 2020.
+  ~ Jeneral Samopal Company
   ~ Design and Programming by Alex Dovby
   -->
 
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/empty">
 
-    </PreferenceCategory>
     <Preference
         android:icon="@drawable/ic_grp_schedule"
         android:title="@string/pref_group_title_schedule" />
@@ -61,5 +59,10 @@
         android:positiveButtonText="@null"
         android:summary="@string/pref_schedule_def_frequency_str"
         android:title="@string/pref_schedule_swap_freq" />
-
+    <SwitchPreference
+        android:defaultValue="false"
+        android:icon="@drawable/ic_all_scr"
+        android:key="sw_all_swap"
+        android:summary="@string/pref_schedule_swap_all_desc"
+        android:title="@string/pref_schedule_swap_all_title" />
 </PreferenceScreen>

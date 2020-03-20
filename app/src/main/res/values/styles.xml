@@ -8,16 +8,6 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="appTextSmall" parent="@android:style/TextAppearance.Small">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">@color/colorSmallText</item>
-        <item name="android:gravity">center</item>
-        <item name="android:textSize">12sp</item>
-        <item name="android:maxLines">1</item>
-    </style>
-
-
 
     <style name="FullscreenTheme" parent="AppTheme">
         <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
@@ -55,10 +45,6 @@
     </style>
     <!-- Preference Screen Theme -->
     <!--  disabled item ======== -->
-    <style name="AppTheme_PreferenceScreenStyle">
-        <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
-        <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>
-    </style>
 
     <style name="ActionBar.Solid" parent="@style/Widget.AppCompat.ActionBar.Solid">
         <!-- PreferencesTheme ActionBar Style -->
