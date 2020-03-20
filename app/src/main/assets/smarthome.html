@@ -45,13 +45,10 @@
             float: left;
             width: 100%;
             height: 100%;
-            padding: 40px 0 70px 0;
+            padding: 25px 0 85px 0;
             text-align: center;
             overflow: hidden;
             background: black;
-            /* border: solid thin #282d39; */
-            border-top: none;
-            /* max-height: 700px; */
         }
 
         .content_title {
@@ -74,7 +71,6 @@
             background: black;
             background-color: black;
             padding-bottom: 20px;
-            /* border-bottom: solid 20px #000; */
         }
 
         .overlay {
@@ -83,10 +79,20 @@
             height: 100%;
             pointer-events: none;
             background: center center url(smarthome/img/iIcon.png) no-repeat;
-            background-size: auto 128px;
+            background-size: auto 90px;
             background-color: rgba(0, 0, 0, 1);
         }
     </style>
+    <!-- public libraries -->
+    <script type="text/javascript" src="libs/jquery-2.1.4.min.js"></script>
+    <script>
+        window.onload = function () {
+            "use strict";
+            window.setTimeout(function () {
+                $(".overlay").fadeOut("slow");
+            }, 2500);
+        };
+    </script>
 </head>
 
 <body>
@@ -96,7 +102,8 @@
         <!-- <iframe class="panels_content" src="smarthome/statistic.html"></iframe> -->
         <iframe class="panels_content" src="smarthome/main_sh.html"></iframe>
     </div>
-    <!-- <div class="overlay"></div> -->
+    <div class="overlay"></div>
+
 </body>
 
 </html>

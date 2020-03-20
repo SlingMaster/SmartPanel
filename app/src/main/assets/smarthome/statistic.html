@@ -22,6 +22,33 @@
 		body {
 			background: black;
 		}
+        .overlay {
+			position: fixed;
+			top: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: center center url(img/ic_stats.png) no-repeat;
+            background-size: auto 90px;
+            background-color: rgba(0, 0, 0, 1);
+            -webkit-animation-duration: 2s;animation-duration: 2s;
+            -webkit-animation-fill-mode: both;animation-fill-mode: both;
+        }
+        
+         @-webkit-keyframes fadeOut {
+            0% {opacity: 1;}
+            100% {opacity: 0;}
+         }
+         
+         @keyframes fadeOut {
+            0% {opacity: 1;}
+            100% {opacity: 0;}
+         }
+         
+         .fadeOut {
+            -webkit-animation-name: fadeOut;
+            animation-name: fadeOut;
+         }
 	</style>
 
 	<link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400&display=swap&subset=cyrillic"
@@ -42,9 +69,7 @@
 </head>
 
 <body>
-	<div id="win" class="content css-opacity">
-
-
+	<div id="win" class="content">
 		<div class="panels stat">
 			<div class="panel_esp">
 				<div class="ds_box caption">
@@ -78,6 +103,7 @@
 			<div class="ds_box copyright">&#169; 2020 JENERAL SAMOPAL COMPANY</div>
 		</div>
 	</div>
+	<div class="overlay"></div>
 </body>
 
 </html>
