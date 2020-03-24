@@ -1,20 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
     android:keepScreenOn="true"
     tools:context="com.jsc.smartpanel.FullscreenActivity">
-
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
-
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
-
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -48,16 +39,29 @@
         android:fitsSystemWindows="false"
         android:orientation="vertical">
 
-        <ImageView
+        <LinearLayout
+            android:id="@+id/img_splash"
             android:layout_width="match_parent"
             android:layout_height="@dimen/splash_height"
+            android:layout_gravity="top"
             android:layout_marginTop="@dimen/splash_margin"
             android:layout_marginBottom="@dimen/def_margin"
-            android:adjustViewBounds="false"
-            android:contentDescription="@string/empty"
-            android:cropToPadding="false"
-            android:scaleType="centerInside"
-            app:srcCompat="@drawable/splash" />
+            android:background="@drawable/splash"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btn_exit"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="@android:dimen/notification_large_icon_width"
+                android:layout_height="@android:dimen/notification_large_icon_height"
+
+                android:layout_marginLeft="@dimen/btn_margin_left"
+                android:layout_marginTop="@dimen/btn_margin_top"
+                android:layout_marginRight="@dimen/btn_margin_left"
+                android:background="@drawable/btn_power"
+                android:focusable="false"
+                android:visibility="visible" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -79,7 +83,6 @@
                 android:background="@drawable/btn_radio"
                 android:focusable="false"
                 android:visibility="visible" />
-
 
             <Button
                 android:id="@+id/btn_smart"
@@ -163,7 +166,6 @@
                 android:id="@+id/btn_settings"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="@dimen/ic_launcher_size"
-
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginLeft="@dimen/btn_margin"
@@ -178,9 +180,9 @@
 
     <Button
         android:id="@+id/btnShowCtrl"
+        style="?android:attr/buttonBarButtonStyle"
         android:layout_width="@android:dimen/app_icon_size"
         android:layout_height="@android:dimen/app_icon_size"
-
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginLeft="@dimen/btn_margin"
         android:layout_marginRight="@dimen/btn_margin"
@@ -188,7 +190,6 @@
         android:background="@drawable/btn_more"
         android:focusable="false"
         android:gravity="center_horizontal"
-        style="?android:attr/buttonBarButtonStyle"
         android:visibility="visible" />
 
     <TextView
@@ -204,12 +205,4 @@
         android:textColor="@android:color/holo_orange_light"
         android:textSize="18sp"
         tools:text="@string/about_app_title" />
-
-<!--        <FrameLayout-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:fitsSystemWindows="true">-->
-
-<!--        </FrameLayout>-->
-
 </FrameLayout>
