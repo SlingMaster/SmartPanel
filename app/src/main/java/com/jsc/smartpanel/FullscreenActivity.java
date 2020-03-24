@@ -96,6 +96,7 @@ public class FullscreenActivity extends AppCompatActivity {
             // "next kill --------------------------
             nextKill = intent.getBooleanExtra("next_kill", false);
             // -------------------------------------
+            System.out.println("trace | =============  Must Run App:" + nextApp + " | next_kill " + nextKill);
         }
 
         // SCREEN_BRIGHT_WAKE_LOCK =================
@@ -134,6 +135,9 @@ public class FullscreenActivity extends AppCompatActivity {
                 splash.setVisibility(View.VISIBLE);
             }
         });
+        findViewById(R.id.btn_exit).setOnClickListener(
+                view -> System.exit(0)
+        );
         // show settings activity ------------------------
         findViewById(R.id.btn_settings).setOnClickListener(view -> {
             Context context = getApplicationContext();
@@ -334,7 +338,7 @@ public class FullscreenActivity extends AppCompatActivity {
                         }
                         runKillAllProcess();
                     }
-                }, 1000);
+                }, 4000);
     }
 
 
@@ -469,6 +473,11 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     private void externalCMD(int cmd, @NonNull JSONObject json) {
+
+        String msgMemory = "CMD | " + lastCMD + " |";
+        TextView textInfo = findViewById(R.id.memInfo);
+        textInfo.setText(msgMemory);
+
         Toast.makeText(getBaseContext(), "Transmitted External Command  | DEC • " + cmd + " | " + json.toString(), Toast.LENGTH_SHORT).show();
         switch (cmd) {
             case Constants.CMD_BACK_LIGHT:
@@ -490,6 +499,10 @@ public class FullscreenActivity extends AppCompatActivity {
         Toast.makeText(getBaseContext(), "Transmitted External Command • $" + String.format("%X", cmd) + " | DEC • " + cmd, Toast.LENGTH_SHORT).show();
 
         if (cmd == lastCMD) {
+            View splash = findViewById(R.id.splash);
+            if (splash.getVisibility() == View.VISIBLE) {
+                splash.setVisibility(View.GONE);
+            }
             return;
         }
         switch (cmd) {
@@ -570,7 +583,7 @@ public class FullscreenActivity extends AppCompatActivity {
             nextKill = true;
             lastCMD = cmd;
             currentApp = Constants.PACKAGES[app_idx];
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
             startActivity(intent);
         } else {
             Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
@@ -657,7 +670,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 new Handler().post(new UpdateUIRunnable(Constants.CMD_LOAD_TIMER));
             } else {
                 if (timer == null) {
-                    System.out.println("traceSW | startTimer");
+                    // System.out.println("traceSW | startTimer");
                     String tempNumStr = preference.getString("swap_frequency", "1");
                     int swap_frequency = Integer.parseInt(tempNumStr) * 60000;
                     timer = new Timer();
