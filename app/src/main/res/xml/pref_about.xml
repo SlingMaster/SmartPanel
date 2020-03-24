@@ -1,26 +1,20 @@
 <!--
-  ~ Copyright (c) 2019.
-  ~ RF Controls
+  ~ Copyright (c) 2020.
+  ~ Jeneral Samopal Company
   ~ Design and Programming by Alex Dovby
   -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/empty">
-
-    </PreferenceCategory>
+    <Preference
+        android:title="@string/empty" />
     <PreferenceCategory
-        android:icon="@drawable/ic_48"
-        android:layout="@layout/pref_about_ic" />
+        android:layout="@layout/pref_about_ic"
+        android:title="@string/empty" />
     <Preference
         android:key="version"
         android:selectable="false"
         android:summary="@string/version"
         android:title="@string/about_app_title" />
-    <Preference
-        android:key="device_ip"
-        android:selectable="false"
-        android:summary="@string/def_node_bathroom_url"
-        android:title="@string/about_ip_title" />
     <Preference
         android:selectable="false"
         android:shouldDisableView="true"

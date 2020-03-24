@@ -1,19 +1,11 @@
 <!--
-  ~ Copyright (c) 2019.
-  ~ RF Controls
+  ~ Copyright (c) 2020.
+  ~ Jeneral Samopal Company
   ~ Design and Programming by Alex Dovby
   -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory android:title="@string/empty">
-
-    </PreferenceCategory>
-    <Preference
-        android:icon="@drawable/ic_grp_remote"
-        android:selectable="false"
-        android:shouldDisableView="false"
-        android:title="@string/pref_group_title_remote" />
     <SwitchPreference
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

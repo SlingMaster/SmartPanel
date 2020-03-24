@@ -169,6 +169,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
             editor.putString("start_day", getResources().getString(R.string.pref_schedule_def_start_day));
             editor.putString("start_night", getResources().getString(R.string.pref_schedule_def_start_night));
             editor.putBoolean("sw_swap", false);
+            editor.putBoolean("sw_all_swap", false);
             editor.putString("swap_frequency", getResources().getString(R.string.pref_schedule_def_frequency));
             editor.apply();
         }

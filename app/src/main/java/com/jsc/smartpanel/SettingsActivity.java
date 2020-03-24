@@ -169,6 +169,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("ip_bathroom"));
             bindPreferenceSummaryToValue(findPreference("chip_weather"));
             bindPreferenceSummaryToValue(findPreference("chip_bathroom"));
+            bindPreferenceSummaryToValue(findPreference("device_ip"));
         }
 
         @Override
@@ -251,7 +252,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             setHasOptionsMenu(true);
             // ------------------------------------------------
             bindPreferenceSummaryToValue(findPreference("version"));
-            bindPreferenceSummaryToValue(findPreference("device_ip"));
+
         }
 
         @Override

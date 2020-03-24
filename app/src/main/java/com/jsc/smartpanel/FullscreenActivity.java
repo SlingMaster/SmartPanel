@@ -59,6 +59,7 @@ public class FullscreenActivity extends AppCompatActivity {
     private Boolean nextKill;
     private String currentApp;
     private boolean mVisible;
+    private int test_cycles = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,20 +135,20 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         });
         // show settings activity ------------------------
-        findViewById(R.id.icon7).setOnClickListener(view -> {
+        findViewById(R.id.btn_settings).setOnClickListener(view -> {
             Context context = getApplicationContext();
             Intent configIntent = new Intent(context, SettingsActivity.class);
             configIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(configIntent);
         });
         // menu list applications ------------------------
-        findViewById(R.id.icon1).setOnClickListener(view -> externalCMD(Constants.CMD_RADIO));
-        findViewById(R.id.icon2).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_SMART));
-        findViewById(R.id.icon3).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_STATS));
-        findViewById(R.id.icon4).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_TIMER));
-        findViewById(R.id.icon5).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_WEATHER));
-        findViewById(R.id.icon6).setOnClickListener(view -> externalCMD(Constants.CMD_SLING));
-        findViewById(R.id.icon8).setOnClickListener(view -> externalCMD(Constants.CMD_WIFI_SCANNER));
+        findViewById(R.id.btn_radio).setOnClickListener(view -> externalCMD(Constants.CMD_RADIO));
+        findViewById(R.id.btn_smart).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_SMART));
+        findViewById(R.id.btn_stats).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_STATS));
+        findViewById(R.id.btn_timer).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_TIMER));
+        findViewById(R.id.btn_weather).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_WEATHER));
+        findViewById(R.id.btn_sling).setOnClickListener(view -> externalCMD(Constants.CMD_SLING));
+        findViewById(R.id.btn_wifi).setOnClickListener(view -> externalCMD(Constants.CMD_WIFI_SCANNER));
     }
 
     @Override
@@ -219,7 +220,8 @@ public class FullscreenActivity extends AppCompatActivity {
         // this code must remove after debug
         // ********************************
         // memory leak --------------------
-        String msgMemory = "FREE RAM : " + SysUtils.getFreeMemory(this) + " Mb";
+        test_cycles++;
+        String msgMemory = "FREE RAM : " + SysUtils.getFreeMemory(this) + " Mb | CYCLES : " + test_cycles;
         TextView textInfo = findViewById(R.id.memInfo);
         textInfo.setText(msgMemory);
         // ********************************
@@ -275,6 +277,9 @@ public class FullscreenActivity extends AppCompatActivity {
                 break;
             case JSConstants.EVT_WOKE_UP:
                 updateOnUIThread("{cmd:" + Constants.CMD_LOAD_WEATHER + "}");
+                break;
+            case JSConstants.EVT_SHOW_TIME:
+                updateOnUIThread("{cmd:" + Constants.CMD_LOAD_TIMER + "}");
                 break;
             case JSConstants.EVT_BACK:
                 break;
@@ -596,7 +601,8 @@ public class FullscreenActivity extends AppCompatActivity {
     // ===================================
     public void swapScreen() {
         cur_screen++;
-        if (cur_screen >= Constants.SWAP_APPS.length) {
+        int length = preference.getBoolean("sw_all_swap", false) ? Constants.SWAP_APPS.length : 2;
+        if (cur_screen >= length) {
             cur_screen = 0;
         }
         System.out.println("traceSW | Swap Screen | Cur_screen = " + String.valueOf(cur_screen));

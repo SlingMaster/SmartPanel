@@ -25,6 +25,7 @@ public class JSConstants {
     public static final int EVT_WEATHER = 5000;
     public static final int EVT_WOKE_UP = 5100;
     public static final int EVT_NEXT = 5101;
+    public static final int EVT_SHOW_TIME = 5103;
     // ---------------------------
 
     // command for client --------

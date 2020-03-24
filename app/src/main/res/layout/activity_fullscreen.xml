@@ -17,7 +17,6 @@
 
 
     <LinearLayout
-        android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -27,6 +26,17 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <LinearLayout
+                android:id="@+id/fullscreen_content_controls"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_x="0dp"
+                android:layout_y="-1dp"
+                android:gravity="bottom"
+                android:orientation="horizontal"
+                tools:ignore="UselessParent">
+
+            </LinearLayout>
         </com.jsc.smartpanel.html.CustomWebView>
     </LinearLayout>
 
@@ -42,7 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/splash_height"
             android:layout_marginTop="@dimen/splash_margin"
-            android:layout_marginBottom="@dimen/webview_top"
+            android:layout_marginBottom="@dimen/def_margin"
             android:adjustViewBounds="false"
             android:contentDescription="@string/empty"
             android:cropToPadding="false"
@@ -50,115 +60,136 @@
             app:srcCompat="@drawable/splash" />
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/ic_launcher_size"
+            android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/def_margin"
-            android:fitsSystemWindows="true"
+            android:fitsSystemWindows="false"
             android:orientation="horizontal"
-            android:paddingLeft="@dimen/ic_padding"
-            android:paddingRight="@dimen/ic_padding"
             android:visibility="visible">
 
-            <ImageView
-                android:id="@+id/icon1"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/ic_launcher_size"
-                android:layout_gravity="top"
-                android:layout_weight="1"
-                android:contentDescription="@string/ic_desc"
-                android:scaleType="centerInside"
-                app:srcCompat="@drawable/btn_radio" />
+            <Button
+                android:id="@+id/btn_radio"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="@dimen/ic_launcher_size"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/btn_margin"
+                android:layout_marginRight="@dimen/btn_margin"
+                android:background="@drawable/btn_radio"
+                android:focusable="false"
+                android:visibility="visible" />
 
-            <ImageView
-                android:id="@+id/icon2"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/ic_launcher_size"
-                android:layout_gravity="top"
-                android:layout_weight="1"
-                android:contentDescription="@string/ic_desc"
-                android:scaleType="centerInside"
-                app:srcCompat="@drawable/btn_smart" />
 
-            <ImageView
-                android:id="@+id/icon3"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/ic_launcher_size"
-                android:layout_gravity="top"
-                android:layout_weight="1"
-                android:contentDescription="@string/ic_desc"
-                android:foregroundGravity="center"
-                android:scaleType="centerInside"
-                app:srcCompat="@drawable/btn_stats" />
+            <Button
+                android:id="@+id/btn_smart"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="@dimen/ic_launcher_size"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/btn_margin"
+                android:layout_marginRight="@dimen/btn_margin"
+                android:background="@drawable/btn_smart"
+                android:focusable="false"
+                android:gravity="center_horizontal"
+                android:visibility="visible" />
 
-            <ImageView
-                android:id="@+id/icon4"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/ic_launcher_size"
-                android:layout_gravity="top"
-                android:layout_weight="1"
-                android:contentDescription="@string/ic_desc"
-                android:foregroundGravity="center"
-                android:scaleType="centerInside"
-                app:srcCompat="@drawable/btn_timer" />
+            <Button
+                android:id="@+id/btn_stats"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="@dimen/ic_launcher_size"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/btn_margin"
+                android:layout_marginRight="@dimen/btn_margin"
+                android:background="@drawable/btn_stats"
+                android:focusable="false"
+                android:gravity="center_horizontal"
+                android:visibility="visible" />
 
-            <ImageView
-                android:id="@+id/icon5"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/ic_launcher_size"
-                android:layout_gravity="top"
-                android:layout_weight="1"
-                android:contentDescription="@string/ic_desc"
-                android:fadingEdge="horizontal"
-                android:scaleType="centerInside"
-                app:srcCompat="@drawable/btn_weather" />
+            <Button
+                android:id="@+id/btn_timer"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="@dimen/ic_launcher_size"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/btn_margin"
+                android:layout_marginRight="@dimen/btn_margin"
+                android:background="@drawable/btn_timer"
+                android:focusable="false"
+                android:gravity="center_horizontal"
+                android:visibility="visible" />
 
-            <ImageView
-                android:id="@+id/icon6"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/ic_launcher_size"
-                android:layout_gravity="top"
-                android:layout_weight="1"
-                android:contentDescription="@string/ic_desc"
-                android:fadingEdge="horizontal"
-                android:scaleType="centerInside"
-                app:srcCompat="@drawable/btn_sling" />
+            <Button
+                android:id="@+id/btn_weather"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="@dimen/ic_launcher_size"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/btn_margin"
+                android:layout_marginRight="@dimen/btn_margin"
+                android:background="@drawable/btn_weather"
+                android:focusable="false"
+                android:gravity="center_horizontal"
+                android:visibility="visible" />
 
-            <ImageView
-                android:id="@+id/icon8"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/ic_launcher_size"
-                android:layout_gravity="top"
-                android:layout_weight="1"
-                android:contentDescription="@string/ic_desc"
-                android:fadingEdge="horizontal"
-                android:scaleType="centerInside"
-                app:srcCompat="@drawable/ic_debug" />
+            <Button
+                android:id="@+id/btn_sling"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="@dimen/ic_launcher_size"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/btn_margin"
+                android:layout_marginRight="@dimen/btn_margin"
+                android:background="@drawable/btn_sling"
+                android:focusable="false"
+                android:gravity="center_horizontal"
+                android:visibility="visible" />
 
-            <ImageView
-                android:id="@+id/icon7"
-                android:layout_width="0dp"
-                android:layout_height="@dimen/ic_launcher_size"
-                android:layout_gravity="top"
-                android:layout_weight="1"
-                android:contentDescription="@string/ic_desc"
-                android:fadingEdge="horizontal"
-                android:scaleType="centerInside"
-                app:srcCompat="@drawable/btn_preset" />
+            <Button
+                android:id="@+id/btn_wifi"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="@dimen/ic_launcher_size"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/btn_margin"
+                android:layout_marginRight="@dimen/btn_margin"
+                android:background="@drawable/btn_wifi"
+                android:focusable="false"
+                android:gravity="center_horizontal"
+                android:visibility="visible" />
 
+            <Button
+                android:id="@+id/btn_settings"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="@dimen/ic_launcher_size"
+
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="@dimen/btn_margin"
+                android:layout_marginRight="@dimen/btn_margin"
+                android:background="@drawable/btn_settings"
+                android:focusable="false"
+                android:gravity="center_horizontal"
+                android:visibility="visible" />
         </LinearLayout>
-
 
     </LinearLayout>
 
-    <ImageView
+    <Button
         android:id="@+id/btnShowCtrl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/ic_launcher_size"
-        android:layout_gravity="bottom"
-        android:background="@android:color/black"
-        android:contentDescription="@string/ic_desc"
-        android:scaleType="center"
-        app:srcCompat="@drawable/ic_more" />
+        android:layout_width="@android:dimen/app_icon_size"
+        android:layout_height="@android:dimen/app_icon_size"
+
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginLeft="@dimen/btn_margin"
+        android:layout_marginRight="@dimen/btn_margin"
+        android:layout_marginBottom="@dimen/def_margin"
+        android:background="@drawable/btn_more"
+        android:focusable="false"
+        android:gravity="center_horizontal"
+        style="?android:attr/buttonBarButtonStyle"
+        android:visibility="visible" />
 
     <TextView
         android:id="@+id/memInfo"
@@ -174,21 +205,11 @@
         android:textSize="18sp"
         tools:text="@string/about_app_title" />
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
+<!--        <FrameLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:fitsSystemWindows="true">-->
 
-        <LinearLayout
-            android:id="@+id/fullscreen_content_controls"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="bottom"
-            android:orientation="horizontal"
-            tools:ignore="UselessParent">
-
-        </LinearLayout>
-
-    </FrameLayout>
+<!--        </FrameLayout>-->
 
 </FrameLayout>
