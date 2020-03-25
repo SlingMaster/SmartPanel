@@ -97,13 +97,6 @@ public class CustomWebView extends WebView {
     // ----------------------------------------
     private class MyWebViewClient extends WebViewClient {
         @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                view.loadUrl(request.getUrl().toString());
-            }
-            return super.shouldOverrideUrlLoading(view, request);
-        }
-        @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             System.out.println("[ trace  ] onPage Finished : " + url);
