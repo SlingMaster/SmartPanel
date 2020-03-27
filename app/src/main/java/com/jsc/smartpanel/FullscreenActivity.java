@@ -188,6 +188,10 @@ public class FullscreenActivity extends AppCompatActivity {
 
     @NonNull
     private CustomWebView createWebView() {
+        if (webView != null) {
+            webView.removeAllViews();
+            webView.destroy();
+        }
         CustomWebView view = new CustomWebView(this);
         view.setWebEventsListener(this::webViewEvents);
         // SIGNAL 11 SIGSEGV crash Android
@@ -197,6 +201,10 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ----------------------------------------
     protected void loadHtml(String url) {
+        if (nextWebView != null) {
+            nextWebView.removeAllViews();
+            nextWebView.destroy();
+        }
         String root = preference.getBoolean("sw_debug_mode", false)
                 ? getResources().getString(R.string.root_debug) :
                 getResources().getString(R.string.root);
@@ -450,9 +458,6 @@ public class FullscreenActivity extends AppCompatActivity {
     // ===================================
     private void externalCMD(int cmd, @NonNull JSONObject json) {
 
-        String msgMemory = "CMD | " + lastCMD + " |";
-        TextView textInfo = findViewById(R.id.memInfo);
-        textInfo.setText(msgMemory);
 
         Toast.makeText(getBaseContext(), "Transmitted External Command  | DEC • " + cmd + " | " + json.toString(), Toast.LENGTH_SHORT).show();
         switch (cmd) {
