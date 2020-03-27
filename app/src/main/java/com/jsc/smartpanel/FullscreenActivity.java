@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +41,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class FullscreenActivity extends AppCompatActivity {
@@ -49,8 +51,11 @@ public class FullscreenActivity extends AppCompatActivity {
     Timer timer;
     TimerTask swapTimerTask;
 
-    private View mControlsView;
+    @Nullable
     CustomWebView webView;
+    @Nullable
+    CustomWebView nextWebView;
+    ViewGroup webContainer;
 
     private long back_pressed;
     private int cur_screen = 0;
@@ -58,7 +63,6 @@ public class FullscreenActivity extends AppCompatActivity {
     private String nextApp;
     private Boolean nextKill;
     private String currentApp;
-    private boolean mVisible;
     private int test_cycles = 0;
 
     @Override
@@ -66,8 +70,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         preference = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // -------------------------------------
 
         Intent intent = getIntent();
         System.out.println("trace | onCreate");
@@ -106,21 +108,10 @@ public class FullscreenActivity extends AppCompatActivity {
         // Device set port ---------------------
         communicationServer = new CommunicationServer(this, Constants.SERVER_PORT);
 
-        mVisible = true;
-        mControlsView = findViewById(R.id.fullscreen_content_controls);
-
         setupClickListeners();
 
-        // ------------------------------------
-        // WebView
-        // ------------------------------------
-        webView = findViewById(R.id.web_view);
-        webView.setOnClickListener(view -> toggle());
-        webView.setWebEventsListener(this::webViewEvents);
-        // SIGNAL 11 SIGSEGV crash Android
-        webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        webContainer = findViewById(R.id.web_container);
 
-        // ------------------------------------
         externalCMD(Constants.CMD_LOAD_TIMER);
     }
 
@@ -159,7 +150,7 @@ public class FullscreenActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         getSupportActionBar().hide();
-        GlobalUtils.hideSystemUI(webView);
+        GlobalUtils.hideSystemUI(webContainer);
         nextKill = false;
         if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
@@ -180,7 +171,10 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         System.out.println("trace • onDestroy");
-        webView.setWebEventsListener(null);
+        if (webView != null)
+            webView.setWebEventsListener(null);
+        webView = null;
+        nextWebView = null;
         stopTimer();
         communicationServer.stop();
         super.onDestroy();
@@ -192,14 +186,13 @@ public class FullscreenActivity extends AppCompatActivity {
         super.onLowMemory();
     }
 
-    private void toggle() {
-        if (mVisible) {
-            mControlsView.setVisibility(View.GONE);
-            mVisible = false;
-        } else {
-            mControlsView.setVisibility(View.VISIBLE);
-            mVisible = true;
-        }
+    @NonNull
+    private CustomWebView createWebView() {
+        CustomWebView view = new CustomWebView(this);
+        view.setWebEventsListener(this::webViewEvents);
+        // SIGNAL 11 SIGSEGV crash Android
+        view.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        return view;
     }
 
     // ----------------------------------------
@@ -207,18 +200,8 @@ public class FullscreenActivity extends AppCompatActivity {
         String root = preference.getBoolean("sw_debug_mode", false)
                 ? getResources().getString(R.string.root_debug) :
                 getResources().getString(R.string.root);
-        boolean clear_cache = preference.getBoolean("sw_clear_cache", false);
-        if (clear_cache) {
-            webView.clearCache(true);
-        }
-
-        // ********************************
-        // this solved the problem
-        // SIGNAL 11 SIGSEGV crash Android
-        webView.freeMemory();
-        // ********************************
-
-        webView.loadUrl(root + url);
+        nextWebView = createWebView();
+        nextWebView.loadUrl(root + url);
 
         // ********************************
         // this code must remove after debug
@@ -229,20 +212,6 @@ public class FullscreenActivity extends AppCompatActivity {
         TextView textInfo = findViewById(R.id.memInfo);
         textInfo.setText(msgMemory);
         // ********************************
-    }
-
-    // ===================================================
-    // Create response for HTML UI
-    // ===================================================
-    protected JSONObject createResponse(JSONObject request, JSONObject response) {
-        JSONObject obj = new JSONObject();
-        try {
-            obj.put(JSConstants.REQUEST, request);
-            obj.put(JSConstants.RESPONSE, response);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return obj;
     }
 
     // ===================================================
@@ -266,10 +235,10 @@ public class FullscreenActivity extends AppCompatActivity {
 
         switch (request) {
             case JSConstants.EVT_MAIN_TEST:
-                webView.callbackToUI(JSConstants.EVT_MAIN_TEST, createResponse(requestContent, null));
+                nextWebView.callbackToUI(JSConstants.EVT_MAIN_TEST, CustomWebView.createResponse(requestContent, null));
                 break;
             case JSConstants.EVT_READY:
-                webView.callbackToUI(JSConstants.CMD_INIT, createResponse(requestContent, initData(this)));
+                webView.callbackToUI(JSConstants.CMD_INIT, CustomWebView.createResponse(requestContent, initData(this)));
                 break;
             case JSConstants.EVT_WEATHER:
                 new ReadXmlTask(this, getResources().getString(R.string.weather_xml)).execute();
@@ -328,7 +297,14 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     void onPageFinished() {
-        // ----------------------------------------
+        if(nextWebView==null)
+            return;
+
+        webView = nextWebView;
+        webContainer.removeAllViews();
+        webContainer.addView(webView);
+        nextWebView = null;
+
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
@@ -402,7 +378,7 @@ public class FullscreenActivity extends AppCompatActivity {
             try {
                 JSONObject sendData = XML.toJSONObject(strXML);
                 if (sendData != null) {
-                    activity.webView.callbackToUI(JSConstants.CMD_WEATHER_DATA, activity.createResponse(null, sendData));
+                    activity.webView.callbackToUI(JSConstants.CMD_WEATHER_DATA, CustomWebView.createResponse(null, sendData));
                 }
             } catch (JSONException e) {
                 System.out.println("Unexpected JSON exception" + e);

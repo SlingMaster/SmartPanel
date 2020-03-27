@@ -129,6 +129,21 @@ public class CustomWebView extends WebView {
         }
     }
 
+    // ===================================================
+    // Create response for HTML UI
+    // ===================================================
+    public static JSONObject createResponse(JSONObject request, JSONObject response) {
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put(JSConstants.REQUEST, request);
+            obj.put(JSConstants.RESPONSE, response);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return obj;
+    }
+
+
     // =========================================================
     // Interface HTML > Application
     // =========================================================
