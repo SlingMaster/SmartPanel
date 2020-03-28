@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:keepScreenOn="true"
+    tools:context="com.jsc.smartpanel.FullscreenActivity">
+
+    <FrameLayout
+        android:id="@+id/new_web_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/design_default_color_secondary_variant" />
+    <Button
+        android:id="@+id/btnCtrl"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="@android:dimen/app_icon_size"
+        android:layout_height="@android:dimen/app_icon_size"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginLeft="@dimen/btn_margin"
+        android:layout_marginRight="@dimen/btn_margin"
+        android:layout_marginBottom="@dimen/def_margin"
+        android:background="@drawable/btn_more"
+        android:focusable="false"
+        android:gravity="center_horizontal"
+        android:visibility="visible" />
+</FrameLayout>

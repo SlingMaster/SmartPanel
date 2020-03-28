@@ -39,6 +39,7 @@
         <item name="android:colorForeground">#42221f1f</item>
 
     </style>
+
     <style name="PreferenceScreenStyle" parent="PreferencesTheme">
         <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
         <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>

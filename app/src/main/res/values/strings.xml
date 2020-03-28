@@ -104,6 +104,10 @@
     <string name="about_ip_title">IP Address Smart Panel</string>
     <string name="about_desc">Application for the \nAndroid mobile platform \nsupports WiFi remote control"</string>
     <string name="about_copyright">© 2019 • 2020 Jeneral Samopal Company \nDesign and Programming by Alex Dovby</string>
+
+    <string name="title_activity_web">webActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
     <!-- ==================== -->
 
     <!--    debug panel -->
