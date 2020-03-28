@@ -189,9 +189,12 @@ public class FullscreenActivity extends AppCompatActivity {
     @NonNull
     private CustomWebView createWebView() {
         if (webView != null) {
+            ((ViewGroup) webView.getParent()).removeView(webView);
             webView.removeAllViews();
             webView.destroy();
+            webView = null;
         }
+
         CustomWebView view = new CustomWebView(this);
         view.setWebEventsListener(this::webViewEvents);
         // SIGNAL 11 SIGSEGV crash Android
@@ -202,9 +205,12 @@ public class FullscreenActivity extends AppCompatActivity {
     // ----------------------------------------
     protected void loadHtml(String url) {
         if (nextWebView != null) {
+            ((ViewGroup) nextWebView.getParent()).removeView(nextWebView);
             nextWebView.removeAllViews();
             nextWebView.destroy();
+            nextWebView = null;
         }
+
         String root = preference.getBoolean("sw_debug_mode", false)
                 ? getResources().getString(R.string.root_debug) :
                 getResources().getString(R.string.root);
@@ -305,7 +311,7 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     void onPageFinished() {
-        if(nextWebView==null)
+        if (nextWebView == null)
             return;
 
         webView = nextWebView;
