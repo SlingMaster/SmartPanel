@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jsc.smartpanel.html.CustomWebView;
@@ -52,34 +52,45 @@ public class webActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         preference = PreferenceManager.getDefaultSharedPreferences(this);
         Intent intent = getIntent();
-        System.out.println("trace | onCreate");
+        System.out.println("trace | WEB ACTIVITY | onCreate");
         if (intent != null) {
             // -------------------------------------
             // "next app" --------------------------
             //nextApp = intent.getStringExtra("next_app");
             app_id = intent.getIntExtra("app_id", 2);
             nextApp = Constants.HTML_APPS[app_id];
-            System.out.println("trace | webActivity =============  Must Run App:" + nextApp);
+            // System.out.println("trace | webActivity =============  Must Run App:" + nextApp);
         }
 
         // SCREEN_BRIGHT_WAKE_LOCK =================
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_web);
-        setupClickListeners();
+        // getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        setContentView(R.layout.activity_web);
         webContainer = findViewById(R.id.new_web_container);
+
         // load screen -----------------------------
         loadHtml(nextApp);
-        startTimer();
+        // startTimer();
+        // show splash -----------------------------
+        findViewById(R.id.btnCtrl).setOnClickListener(view -> {
+            onBackPressed();
+        });
+        showMemory("onCreate");
+
     }
 
-    // set listeners for all buttons ----------------
-    private void setupClickListeners() {
-        // show splash ------------------------
-        findViewById(R.id.btnCtrl).setOnClickListener(view -> {
-           // onBackPressed();
-            sendNextAction(Constants.SWAP_SCREEN);
-        });
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        showMemory("onNewIntent");
+        System.out.println("trace | WEB ACTIVITY | onNewIntent");
+        if (intent != null) {
+            // int cmd = intent.getIntExtra("cmd", 0);
+            String jsonStr = intent.getStringExtra("jsonStr");
+            Toast.makeText(getApplicationContext(), "ON NEW INTENT | jsonStr • " + jsonStr, Toast.LENGTH_LONG).show();
+            decryptCommand(jsonStr);
+        }
     }
 
     @Override
@@ -87,33 +98,26 @@ public class webActivity extends AppCompatActivity {
         super.onResume();
         getSupportActionBar().hide();
         GlobalUtils.hideSystemUI(webContainer);
-
         if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
         }
-        // start swap timer ------
-        // startTimer();
     }
 
     @Override
     protected void onStop() {
-        stopTimer();
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        System.out.println("trace newWebView • onDestroy");
+        System.out.println("trace | WEB ACTIVITY | • onDestroy");
         webContainer.removeAllViews();
         if (newWebView != null) {
             newWebView.destroy();
             newWebView = null;
         }
-
-        //android.os.Process.killProcess(android.os.Process.myPid());
-        stopTimer();
     }
 
     @Override
@@ -124,13 +128,6 @@ public class webActivity extends AppCompatActivity {
 
     @NonNull
     private CustomWebView createWebView() {
-//        if (newWebView != null) {
-//            ((ViewGroup) newWebView.getParent()).removeView(newWebView);
-//            newWebView.removeAllViews();
-//            newWebView.destroy();
-//            newWebView = null;
-//        }
-
         CustomWebView view = new CustomWebView(this);
         view.setWebEventsListener(this::webViewEvents);
         // SIGNAL 11 SIGSEGV crash Android
@@ -192,7 +189,7 @@ public class webActivity extends AppCompatActivity {
             case JSConstants.EVT_BACK:
                 break;
             case JSConstants.EVT_PAGE_FINISHED:
-//                onPageFinished();
+                onPageFinished();
                 break;
             default:
                 System.out.println("Unsupported command : " + request);
@@ -231,18 +228,31 @@ public class webActivity extends AppCompatActivity {
         return obj;
     }
 
-//    void onPageFinished() {
-//        new android.os.Handler().postDelayed(
-//                new Runnable() {
-//                    public void run() {
-//                    }
-//                }, 4000);
-//    }
+    // -----------------------------------
+    void onPageFinished() {
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        sendNextAction(Constants.SWAP_SCREEN);
+                    }
+                }, getTimeout());
+    }
 
+    // ----------------------------------------
+    protected void showMemory(String pref) {
+        // ********************************
+        // this code must remove after debug
+        // ********************************
+        // memory leak --------------------
+        String msgMemory = "FREE RAM : " + SysUtils.getFreeMemory(this) + " Mb";
+        TextView textInfo = findViewById(R.id.memInfo);
+        textInfo.setText(pref + " • " + msgMemory);
+        // ********************************
+    }
 
     // =========================================================
-// Read XML Weather
-// =========================================================
+    // Read XML Weather
+    // =========================================================
     private static class ReadXmlTask extends AsyncTask<Void, Void, String> {
         //        private WeakReference<FullscreenActivity> activityReference;
         private WeakReference<webActivity> activityReference;
@@ -310,57 +320,26 @@ public class webActivity extends AppCompatActivity {
     }
 
     // ===================================
-    private void startTimer() {
-        // ***********************************************
-        // work if Auto Swap Screens is enabled
-        // only during the daytime
-        // ***********************************************
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+    // ===================================
+    private int getTimeout() {
+        // delay 24 hours ------------
+        int swap_frequency = 86400000;
+        // int swap_frequency = 20000;
         if (preference.getBoolean("sw_swap", true)) {
-            if (SysUtils.isNight(
+            if (!SysUtils.isNight(
                     preference.getString("start_day", "6"),
                     preference.getString("start_night", "20"))) {
-                System.out.println("traceSW | Next stopTimer");
-                stopTimer();
-                onBackPressed();
-                // new Handler().post(new FullscreenActivity.UpdateUIRunnable(Constants.CMD_LOAD_TIMER));
-            } else {
-                if (timer == null) {
-                    // System.out.println("traceSW | startTimer");
-                    String tempNumStr = preference.getString("swap_frequency", "1");
-                    int swap_frequency = Integer.parseInt(tempNumStr) * 60000;
-                    timer = new Timer();
-                    swapTimerTask = new webActivity.SwapTimerTask();
-                    timer.schedule(swapTimerTask, 60000, swap_frequency);
-                }
+                String tempNumStr = preference.getString("swap_frequency", "1");
+                swap_frequency = Integer.parseInt(tempNumStr) * 60000;
+                System.out.println("trace | Next return " + swap_frequency + " min");
             }
         }
-    }
-
-    // ===================================
-    private void stopTimer() {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-            swapTimerTask = null;
-        }
-    }
-
-    // ===================================
-    class SwapTimerTask extends TimerTask {
-        @Override
-        public void run() {
-
-            // --------------------------
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("traceSW | WEB_VIEW ACTIVITY Swap Timer Task ");
-//                    swapScreen();
-                    // onBackPressed();
-//                    sendNextAction(Constants.SWAP_SCREEN);
-                }
-            });
-        }
+        return swap_frequency;
     }
 
     // =========================================================
@@ -370,10 +349,66 @@ public class webActivity extends AppCompatActivity {
         setResult(RESULT_OK, resultIntent);
         finish();
     }
+    // =========================================================
+    // External Command
+    // =========================================================
 
-    // ===================================
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
+    //==============================================
+    private void decryptCommand(String data) {
+        if (data == null) {
+            System.out.println("decryptCommand | data null");
+            return;
+        }
+        try {
+            JSONObject clientRequest = new JSONObject(data);
+            if (clientRequest.has("cmd")) {
+                int cmd = clientRequest.optInt("cmd", 0);
+                if (clientRequest.has("json")) {
+                    JSONObject json = clientRequest.optJSONObject("json");
+                    if (json != null) {
+                        runCMD(cmd, json);
+                    }
+                } else {
+                    runCMD(cmd);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //==============================================
+    protected void runCMD(int cmd, JSONObject json) {
+        switch (cmd) {
+            case Constants.CMD_BACK_LIGHT:
+                if (json.has("state")) {
+                    SysUtils.setBackLight(this, json.optBoolean("state", true));
+                }
+                break;
+            default:
+                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();
+                break;
+        }
+
+    }
+
+    // ==============================================
+    protected void runCMD(int cmd) {
+        switch (cmd) {
+            case Constants.CMD_TIMER_SWAP:
+                newWebView.callbackToUI(JSConstants.CMD_SWAP);
+                break;
+            case Constants.CMD_DEBUG_MODE:
+                break;
+            case Constants.CMD_WEATHER_FORECAST:
+                newWebView.callbackToUI(JSConstants.CMD_SWAP);
+                break;
+            case Constants.CMD_WEATHER_MAGIC:
+                newWebView.callbackToUI(JSConstants.CMD_SEASON_MAGIC);
+                break;
+            default:
+                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();
+                break;
+        }
     }
 }

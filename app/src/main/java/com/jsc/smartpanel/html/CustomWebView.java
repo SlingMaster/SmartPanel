@@ -99,7 +99,7 @@ public class CustomWebView extends WebView {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            System.out.println("[ trace  ] onPage Finished : " + url);
+            // System.out.println("[ trace  ] onPage Finished : " + url);
             final WebEvents listener = webListener;
             if(listener!=null) {
                 listener.webViewEvents(JSConstants.EVT_PAGE_FINISHED, "{}");

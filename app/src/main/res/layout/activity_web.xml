@@ -11,7 +11,7 @@
         android:id="@+id/new_web_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/design_default_color_secondary_variant" />
+        android:background="@color/colorPrimary" />
     <Button
         android:id="@+id/btnCtrl"
         style="?android:attr/buttonBarButtonStyle"
@@ -25,4 +25,18 @@
         android:focusable="false"
         android:gravity="center_horizontal"
         android:visibility="visible" />
+
+    <TextView
+        android:id="@+id/memInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:paddingLeft="@dimen/debug_panel_padding"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:paddingRight="@dimen/debug_panel_padding"
+        android:paddingBottom="@dimen/nav_header_vertical_spacing"
+        android:text="@string/empty"
+        android:textColor="@android:color/holo_blue_light"
+        android:textSize="18sp"
+        tools:text="@string/about_app_title" />
 </FrameLayout>
