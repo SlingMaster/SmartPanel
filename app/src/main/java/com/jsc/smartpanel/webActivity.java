@@ -1,10 +1,12 @@
 package com.jsc.smartpanel;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,24 +28,17 @@ import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
 public class webActivity extends AppCompatActivity {
     public static SharedPreferences preference;
     private String nextApp;
     ViewGroup webContainer;
     Integer app_id;
-    Timer timer;
-    TimerTask swapTimerTask;
     @Nullable
     CustomWebView newWebView;
 
@@ -54,29 +49,17 @@ public class webActivity extends AppCompatActivity {
         Intent intent = getIntent();
         System.out.println("trace | WEB ACTIVITY | onCreate");
         if (intent != null) {
-            // -------------------------------------
-            // "next app" --------------------------
-            //nextApp = intent.getStringExtra("next_app");
             app_id = intent.getIntExtra("app_id", 2);
             nextApp = Constants.HTML_APPS[app_id];
-            // System.out.println("trace | webActivity =============  Must Run App:" + nextApp);
         }
-
-        // SCREEN_BRIGHT_WAKE_LOCK =================
-        // getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_web);
         webContainer = findViewById(R.id.new_web_container);
+        findViewById(R.id.btnCtrl).setOnClickListener(view -> onBackPressed());
 
         // load screen -----------------------------
         loadHtml(nextApp);
-        // startTimer();
-        // show splash -----------------------------
-        findViewById(R.id.btnCtrl).setOnClickListener(view -> {
-            onBackPressed();
-        });
         showMemory("onCreate");
-
     }
 
 
@@ -86,9 +69,8 @@ public class webActivity extends AppCompatActivity {
         showMemory("onNewIntent");
         System.out.println("trace | WEB ACTIVITY | onNewIntent");
         if (intent != null) {
-            // int cmd = intent.getIntExtra("cmd", 0);
             String jsonStr = intent.getStringExtra("jsonStr");
-            Toast.makeText(getApplicationContext(), "ON NEW INTENT | jsonStr • " + jsonStr, Toast.LENGTH_LONG).show();
+            // Toast.makeText(getApplicationContext(), "ON NEW INTENT | jsonStr • " + jsonStr, Toast.LENGTH_LONG).show();
             decryptCommand(jsonStr);
         }
     }
@@ -96,7 +78,7 @@ public class webActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        getSupportActionBar().hide();
+        Objects.requireNonNull(getSupportActionBar()).hide();
         GlobalUtils.hideSystemUI(webContainer);
         if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
@@ -167,9 +149,11 @@ public class webActivity extends AppCompatActivity {
 
         switch (request) {
             case JSConstants.EVT_MAIN_TEST:
+                assert newWebView != null;
                 newWebView.callbackToUI(JSConstants.EVT_MAIN_TEST, CustomWebView.createResponse(requestContent, null));
                 break;
             case JSConstants.EVT_READY:
+                assert newWebView != null;
                 newWebView.callbackToUI(JSConstants.CMD_INIT, CustomWebView.createResponse(requestContent, initData(this)));
                 break;
             case JSConstants.EVT_WEATHER:
@@ -178,12 +162,14 @@ public class webActivity extends AppCompatActivity {
             case JSConstants.EVT_NEXT:
                 break;
             case JSConstants.EVT_SYNC:
-                // syncData();
+                // sendNextAction(Constants.SYNC);
                 break;
             case JSConstants.EVT_WOKE_UP:
+                sendNextAction(Constants.WOKE_UP);
                 // updateOnUIThread("{cmd:" + Constants.CMD_LOAD_WEATHER + "}");
                 break;
             case JSConstants.EVT_SHOW_TIME:
+                sendNextAction(Constants.SHOW_TIME);
                 // updateOnUIThread("{cmd:" + Constants.CMD_LOAD_TIMER + "}");
                 break;
             case JSConstants.EVT_BACK:
@@ -230,15 +216,22 @@ public class webActivity extends AppCompatActivity {
 
     // -----------------------------------
     void onPageFinished() {
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        sendNextAction(Constants.SWAP_SCREEN);
-                    }
-                }, getTimeout());
+        Handler handler = new Handler();
+        handler.postDelayed(() -> sendNextAction(Constants.SWAP_SCREEN), getTimeout());
     }
 
+    // -----------------------------------
+//    void onPageFinished() {
+//        new android.os.Handler().postDelayed(
+//                new Runnable() {
+//                    public void run() {
+//                        sendNextAction(Constants.SWAP_SCREEN);
+//                    }
+//                }, getTimeout());
+//    }
+
     // ----------------------------------------
+    @SuppressLint("SetTextI18n")
     protected void showMemory(String pref) {
         // ********************************
         // this code must remove after debug
@@ -310,9 +303,10 @@ public class webActivity extends AppCompatActivity {
             webActivity activity = activityReference.get();
             try {
                 JSONObject sendData = XML.toJSONObject(strXML);
-                if (sendData != null) {
-                    activity.newWebView.callbackToUI(JSConstants.CMD_WEATHER_DATA, CustomWebView.createResponse(null, sendData));
-                }
+                // if (sendData != null) {
+                assert activity.newWebView != null;
+                activity.newWebView.callbackToUI(JSConstants.CMD_WEATHER_DATA, CustomWebView.createResponse(null, sendData));
+                // }
             } catch (JSONException e) {
                 System.out.println("Unexpected JSON exception" + e);
             }
@@ -336,10 +330,19 @@ public class webActivity extends AppCompatActivity {
                     preference.getString("start_night", "20"))) {
                 String tempNumStr = preference.getString("swap_frequency", "1");
                 swap_frequency = Integer.parseInt(tempNumStr) * 60000;
-                System.out.println("trace | Next return " + swap_frequency + " min");
             }
         }
+        System.out.println("trace | Next return " + swap_frequency + " min");
         return swap_frequency;
+    }
+
+    // =========================================================
+    private void sendNextAction(String action, int cmd) {
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("cmd", cmd);
+        resultIntent.putExtra("action", action);
+        setResult(RESULT_OK, resultIntent);
+        finish();
     }
 
     // =========================================================
@@ -347,8 +350,33 @@ public class webActivity extends AppCompatActivity {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("action", action);
         setResult(RESULT_OK, resultIntent);
+        System.out.println("trace | sendNextAction " + action );
         finish();
     }
+
+    // ===================================
+    private void setBackLight() {
+        System.out.println("trace | setBackLight");
+
+        boolean night = SysUtils.isNight(
+                preference.getString("start_day", "6"),
+                preference.getString("start_night", "20"));
+
+        if (night) {
+            // ***********************************************
+            // set backLight should work in a separate thread
+            // working if Auto Set Backlight Screen is enabled
+            // ***********************************************
+            if (preference.getBoolean("sw_back_light", false)) {
+                SysUtils.setBackLight(this, true);
+            }
+        } else {
+            if (preference.getBoolean("sw_back_light", false)) {
+                SysUtils.setBackLight(this, false);
+            }
+        }
+    }
+
     // =========================================================
     // External Command
     // =========================================================
@@ -385,16 +413,21 @@ public class webActivity extends AppCompatActivity {
                     SysUtils.setBackLight(this, json.optBoolean("state", true));
                 }
                 break;
+            case Constants.CMD_DEBUG_MODE:
+                break;
             default:
-                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported) + " | CMD • " + cmd, Toast.LENGTH_SHORT).show();
                 break;
         }
-
     }
 
     // ==============================================
     protected void runCMD(int cmd) {
+        assert newWebView != null;
         switch (cmd) {
+            case Constants.CMD_BACK:
+               // onBackPressed();
+                break;
             case Constants.CMD_TIMER_SWAP:
                 newWebView.callbackToUI(JSConstants.CMD_SWAP);
                 break;
@@ -405,6 +438,12 @@ public class webActivity extends AppCompatActivity {
                 break;
             case Constants.CMD_WEATHER_MAGIC:
                 newWebView.callbackToUI(JSConstants.CMD_SEASON_MAGIC);
+                break;
+            case Constants.CMD_LOAD_SMART:
+            case Constants.CMD_LOAD_STATS:
+            case Constants.CMD_LOAD_TIMER:
+            case Constants.CMD_LOAD_WEATHER:
+                sendNextAction(Constants.LOAD_SCREEN, cmd);
                 break;
             default:
                 Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();

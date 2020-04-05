@@ -37,5 +37,9 @@ public class Constants {
     static final int[] SWAP_APPS = {CMD_LOAD_TIMER, CMD_LOAD_WEATHER, CMD_LOAD_SMART, CMD_LOAD_STATS};
     // intent action ----------------------------
     static final String SWAP_SCREEN = "swap_screen";
+    static final String LOAD_SCREEN = "load_screen";
+    static final String SYNC = "sync";
+    static final String WOKE_UP = "woke_up";
+    static final String SHOW_TIME = "show_time";
 }
 
