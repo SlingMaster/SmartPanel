@@ -10,6 +10,7 @@ public class Constants {
     static final int SERVER_PORT = 8080;
     // public static final int PERMISSION_REQUEST_CODE = 101;
     // public static final int PERMISSION_CHANGE_TIMEOUT = 10000;
+    final static int REQUEST_ACTIVITY_CODE = 1;
 
     // command by int ------
     static final int CMD_RESTART = 0x01;
@@ -34,5 +35,11 @@ public class Constants {
     static final String[] HTML_APPS = {"smarthome.html", "smarthome/statistic.html", "timer.html", "weather.html"};
     static final String[] PACKAGES = {"com.jsc.smartpanel", "air.InternetRadio", "air.SlingPlayerTablet3.A4", "com.pinapps.amped"};
     static final int[] SWAP_APPS = {CMD_LOAD_TIMER, CMD_LOAD_WEATHER, CMD_LOAD_SMART, CMD_LOAD_STATS};
+    // intent action ----------------------------
+    static final String SWAP_SCREEN = "swap_screen";
+    static final String LOAD_SCREEN = "load_screen";
+    static final String SYNC = "sync";
+    static final String WOKE_UP = "woke_up";
+    static final String SHOW_TIME = "show_time";
 }
 

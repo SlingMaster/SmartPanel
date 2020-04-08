@@ -23,13 +23,18 @@
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="29">
         <activity
-            android:name="com.jsc.smartpanel.SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:theme="@style/PreferenceScreenStyle">
+            android:name=".WebActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
 
-        </activity>
+            android:keepScreenOn="true"
+            android:label="@string/title_activity_web"
+            android:theme="@style/FullscreenTheme" />
         <activity
-            android:name="com.jsc.smartpanel.FullscreenActivity"
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:theme="@style/PreferenceScreenStyle" />
+        <activity
+            android:name=".FullscreenActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:theme="@style/FullscreenTheme">

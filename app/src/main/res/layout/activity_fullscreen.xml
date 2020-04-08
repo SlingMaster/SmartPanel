@@ -7,11 +7,6 @@
     android:keepScreenOn="true"
     tools:context="com.jsc.smartpanel.FullscreenActivity">
 
-    <FrameLayout
-        android:id="@+id/web_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
     <LinearLayout
         android:id="@+id/splash"
         android:layout_width="match_parent"
@@ -171,7 +166,7 @@
         android:background="@drawable/btn_more"
         android:focusable="false"
         android:gravity="center_horizontal"
-        android:visibility="visible" />
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/memInfo"

@@ -110,7 +110,7 @@ public class GlobalUtils {
 //    }
 
     // ===================================================
-    public static boolean isConnectingToInternet(Context context) {
+    public static boolean isConnectedToInternet(Context context) {
         ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivity != null) {
             NetworkInfo[] networks = connectivity.getAllNetworkInfo();

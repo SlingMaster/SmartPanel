@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    android:keepScreenOn="true"
+    tools:context="com.jsc.smartpanel.FullscreenActivity">
+
+    <FrameLayout
+        android:id="@+id/new_web_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary" />
+    <Button
+        android:id="@+id/btnCtrl"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="@android:dimen/app_icon_size"
+        android:layout_height="@android:dimen/app_icon_size"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginLeft="@dimen/btn_margin"
+        android:layout_marginRight="@dimen/btn_margin"
+        android:layout_marginBottom="@dimen/def_margin"
+        android:background="@drawable/btn_more"
+        android:focusable="false"
+        android:gravity="center_horizontal"
+        android:visibility="visible" />
+
+    <TextView
+        android:id="@+id/memInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
+        android:gravity="center_horizontal"
+        android:paddingLeft="@dimen/debug_panel_padding"
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:paddingRight="@dimen/debug_panel_padding"
+        android:paddingBottom="@dimen/nav_header_vertical_spacing"
+        android:text="@string/empty"
+        android:textAllCaps="true"
+        android:textColor="@android:color/holo_blue_light"
+        android:textSize="18sp"
+        tools:text="@string/about_app_title" />
+</FrameLayout>
