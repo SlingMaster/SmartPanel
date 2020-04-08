@@ -34,7 +34,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class webActivity extends AppCompatActivity {
+public class WebActivity extends AppCompatActivity {
     public static SharedPreferences preference;
     private String nextApp;
     ViewGroup webContainer;
@@ -80,7 +80,7 @@ public class webActivity extends AppCompatActivity {
         super.onResume();
         Objects.requireNonNull(getSupportActionBar()).hide();
         GlobalUtils.hideSystemUI(webContainer);
-        if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
+        if (!GlobalUtils.isConnectedToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
         }
@@ -157,7 +157,7 @@ public class webActivity extends AppCompatActivity {
                 newWebView.callbackToUI(JSConstants.CMD_INIT, CustomWebView.createResponse(requestContent, initData(this)));
                 break;
             case JSConstants.EVT_WEATHER:
-                new webActivity.ReadXmlTask(this, getResources().getString(R.string.weather_xml)).execute();
+                new WebActivity.ReadXmlTask(this, getResources().getString(R.string.weather_xml)).execute();
                 break;
             case JSConstants.EVT_NEXT:
                 break;
@@ -248,7 +248,7 @@ public class webActivity extends AppCompatActivity {
     // =========================================================
     private static class ReadXmlTask extends AsyncTask<Void, Void, String> {
         //        private WeakReference<FullscreenActivity> activityReference;
-        private WeakReference<webActivity> activityReference;
+        private WeakReference<WebActivity> activityReference;
         private final String listUrl;
 
         HttpURLConnection urlConnection;
@@ -257,7 +257,7 @@ public class webActivity extends AppCompatActivity {
 
         // ----------------------------
         // only retain a weak reference to the activity
-        ReadXmlTask(webActivity activity, @NonNull String list_url) {
+        ReadXmlTask(WebActivity activity, @NonNull String list_url) {
             activityReference = new WeakReference<>(activity);
             listUrl = list_url;
         }
@@ -300,7 +300,10 @@ public class webActivity extends AppCompatActivity {
             super.onPostExecute(strXML);
             // System.out.println("trace | onPostExecute: " + strXML);
             // get a reference to the activity if it is still there
-            webActivity activity = activityReference.get();
+            WebActivity activity = activityReference.get();
+            if(activity==null)
+                return;
+
             try {
                 JSONObject sendData = XML.toJSONObject(strXML);
                 // if (sendData != null) {

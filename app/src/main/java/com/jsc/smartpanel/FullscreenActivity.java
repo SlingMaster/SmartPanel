@@ -29,18 +29,15 @@ public class FullscreenActivity extends AppCompatActivity {
 
     CommunicationServer communicationServer;
     public static SharedPreferences preference;
-    public boolean isActivityForeground = false;
+    public boolean isActivityBackground = true;
     private long back_pressed;
     private int cur_screen = 0;
-    //    private int lastCMD = 0;
 
     private Boolean nextKill;
-    // private String currentApp;
     private int test_cycles = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        String nextApp;
         super.onCreate(savedInstanceState);
         runKillAllProcess();
         preference = PreferenceManager.getDefaultSharedPreferences(this);
@@ -48,24 +45,21 @@ public class FullscreenActivity extends AppCompatActivity {
         Intent intent = getIntent();
         System.out.println("trace | MAIN | onCreate");
         if (intent != null) {
-            // -------------------------------------
             // "next app" --------------------------
-            nextApp = intent.getStringExtra("next_app");
+            String nextApp = intent.getStringExtra("next_app");
             if (nextApp != null) {
-                // int ls = nextApp.length();
-                String ext = nextApp.substring(nextApp.length() - 5);
-                Toast.makeText(getBaseContext(), "Next App Ext : " + ext, Toast.LENGTH_SHORT).show();
+                int slash = nextApp.lastIndexOf('/');
+                if(slash>=0)
+                    nextApp = nextApp.substring(slash);
+                Toast.makeText(getBaseContext(), "Next: " + nextApp, Toast.LENGTH_SHORT).show();
             } else {
                 // first start -------------------------
-                nextApp = "timer.html";
                 Handler handler = new Handler();
                 handler.postDelayed(() -> externalCMD(Constants.CMD_LOAD_TIMER), 2000);
             }
-            // -------------------------------------
-            // "next kill --------------------------
+
+            // "next app to kill --------------------------
             nextKill = intent.getBooleanExtra("next_kill", false);
-            // -------------------------------------
-            // System.out.println("trace | =============  Must Run App:" + nextApp + " | next_kill " + nextKill);
         }
 
         setContentView(R.layout.activity_fullscreen);
@@ -129,7 +123,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ====================================
     private void openWebView(int app_id) {
-        Intent intent = new Intent(this, webActivity.class);
+        Intent intent = new Intent(this, WebActivity.class);
         intent.putExtra("app_id", app_id);
         // intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // Toast.makeText(getBaseContext(), "openWebView ID • " + app_id, Toast.LENGTH_SHORT).show();
@@ -139,7 +133,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ====================================
     private void sendCmdToWebView(String jsonStr) {
-        Intent intent = new Intent(this, webActivity.class);
+        Intent intent = new Intent(this, WebActivity.class);
         intent.putExtra("jsonStr", jsonStr);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
@@ -196,13 +190,13 @@ public class FullscreenActivity extends AppCompatActivity {
         Objects.requireNonNull(getSupportActionBar()).hide();
         // GlobalUtils.hideSystemUI(webContainer);
         nextKill = false;
-        if (!GlobalUtils.isConnectingToInternet(getApplicationContext())) {
+        if (!GlobalUtils.isConnectedToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
         }
 
         watchDog();
-        isActivityForeground = false;
+        isActivityBackground = false;
     }
 
     @Override
@@ -213,7 +207,7 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        isActivityForeground = true;
+        isActivityBackground = true;
         System.out.println("trace | =============  MAIN  ACTIVITY == onPause");
     }
 
@@ -289,7 +283,7 @@ public class FullscreenActivity extends AppCompatActivity {
             case Constants.CMD_LOAD_STATS:
             case Constants.CMD_LOAD_TIMER:
             case Constants.CMD_LOAD_WEATHER:
-                if (isActivityForeground) {
+                if (isActivityBackground) {
                     sendCmdToWebView("{cmd:" + Constants.CMD_BACK + "}");
                     nextKill = false;
                 } else {
