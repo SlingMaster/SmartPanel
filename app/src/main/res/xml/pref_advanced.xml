@@ -30,5 +30,9 @@
         android:icon="@drawable/ic_clear"
         android:key="sw_clear_cache"
         android:title="@string/pref_title_clear_cache" />
-
+    <SwitchPreference
+        android:defaultValue="false"
+        android:icon="@drawable/ic_log"
+        android:key="sw_log_screen"
+        android:title="@string/pref_title_log_screen" />
 </PreferenceScreen>
