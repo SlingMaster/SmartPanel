@@ -123,6 +123,7 @@ public class WebActivity extends AppCompatActivity {
         System.out.println("trace | loadHtml:" + root + url);
         newWebView = createWebView();
         webContainer.addView(newWebView);
+        newWebView.clearCache(preference.getBoolean("sw_clear_cache", false));
         newWebView.loadUrl(root + url);
     }
 
