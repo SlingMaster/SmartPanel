@@ -71,15 +71,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // set listeners for all buttons -------------------
     private void setupClickListeners() {
-        // show splash ------------------------
-        findViewById(R.id.btnShowCtrl).setOnClickListener(view -> {
-            View splash = findViewById(R.id.splash);
-            if (splash.getVisibility() == View.VISIBLE) {
-                splash.setVisibility(View.GONE);
-            } else {
-                splash.setVisibility(View.VISIBLE);
-            }
-        });
         findViewById(R.id.btn_exit).setOnClickListener(
                 view -> System.exit(0)
         );

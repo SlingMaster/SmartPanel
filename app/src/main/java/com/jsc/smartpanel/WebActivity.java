@@ -39,7 +39,6 @@ public class WebActivity extends AppCompatActivity {
     private String nextApp;
     ViewGroup webContainer;
     Integer app_id;
-    // boolean night;
     @Nullable
     CustomWebView newWebView;
 

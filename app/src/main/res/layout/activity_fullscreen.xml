@@ -168,20 +168,6 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnShowCtrl"
-        style="?android:attr/buttonBarButtonStyle"
-        android:layout_width="@android:dimen/app_icon_size"
-        android:layout_height="@android:dimen/app_icon_size"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginLeft="@dimen/btn_margin"
-        android:layout_marginRight="@dimen/btn_margin"
-        android:layout_marginBottom="@dimen/def_margin"
-        android:background="@drawable/btn_more"
-        android:focusable="false"
-        android:gravity="center_horizontal"
-        android:visibility="gone" />
-
     <TextView
         android:id="@+id/memInfo"
         android:layout_width="match_parent"
