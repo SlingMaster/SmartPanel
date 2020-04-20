@@ -207,7 +207,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     public void updateOnUIThread(String str) {
-        SysUtils.LogToScr(this, preference, "REMOTE CMD • " + str);
         runOnUiThread(new UpdateUIRunnable(str));
     }
 
@@ -240,6 +239,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     private void AnalyzerRemoteCMD(String jsonStr) {
+        SysUtils.LogToScr(this, preference, "AnalyzerRemote jsonStr : " + jsonStr);
         JSONObject json;
         int cmd = 0;
         try {
