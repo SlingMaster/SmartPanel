@@ -60,6 +60,7 @@ public class WebActivity extends AppCompatActivity {
         // load screen -----------------------------
         loadHtml(nextApp);
         showMemory("onCreate");
+        FullscreenActivity.app_state = Constants.INTERNAL;
     }
 
 
@@ -80,10 +81,7 @@ public class WebActivity extends AppCompatActivity {
         super.onResume();
         Objects.requireNonNull(getSupportActionBar()).hide();
         GlobalUtils.hideSystemUI(webContainer);
-        if (!GlobalUtils.isConnectedToInternet(getApplicationContext())) {
-            Toast.makeText(getApplicationContext(),
-                    getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
-        }
+        SysUtils.killAllProcess(this);
     }
 
     @Override
@@ -125,6 +123,7 @@ public class WebActivity extends AppCompatActivity {
         System.out.println("trace | loadHtml:" + root + url);
         newWebView = createWebView();
         webContainer.addView(newWebView);
+        newWebView.clearCache(preference.getBoolean("sw_clear_cache", false));
         newWebView.loadUrl(root + url);
     }
 
@@ -165,12 +164,12 @@ public class WebActivity extends AppCompatActivity {
                 // sendNextAction(Constants.SYNC);
                 break;
             case JSConstants.EVT_WOKE_UP:
+                // LOAD_WEATHER --------
                 sendNextAction(Constants.WOKE_UP);
-                // updateOnUIThread("{cmd:" + Constants.CMD_LOAD_WEATHER + "}");
                 break;
             case JSConstants.EVT_SHOW_TIME:
+                // LOAD_TIMER --------
                 sendNextAction(Constants.SHOW_TIME);
-                // updateOnUIThread("{cmd:" + Constants.CMD_LOAD_TIMER + "}");
                 break;
             case JSConstants.EVT_BACK:
                 break;
@@ -204,9 +203,7 @@ public class WebActivity extends AppCompatActivity {
             tempNumStr = preference.getString("start_night", "20");
             num = Integer.parseInt(tempNumStr);
             obj.put("start_night", num);
-            tempNumStr = preference.getString("swap_frequency", "1");
-            num = Integer.parseInt(tempNumStr);
-            obj.put("swap_frequency", num);
+
             // -----------------------------------
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -217,18 +214,10 @@ public class WebActivity extends AppCompatActivity {
     // -----------------------------------
     void onPageFinished() {
         Handler handler = new Handler();
+//        Toast.makeText(getBaseContext(), "TimeOut • " + (getTimeout() / 60000) + " min", Toast.LENGTH_SHORT).show();
+        SysUtils.LogToScr(this, preference, "TimeOut • " + (getTimeout() / 60000) + " min");
         handler.postDelayed(() -> sendNextAction(Constants.SWAP_SCREEN), getTimeout());
     }
-
-    // -----------------------------------
-//    void onPageFinished() {
-//        new android.os.Handler().postDelayed(
-//                new Runnable() {
-//                    public void run() {
-//                        sendNextAction(Constants.SWAP_SCREEN);
-//                    }
-//                }, getTimeout());
-//    }
 
     // ----------------------------------------
     @SuppressLint("SetTextI18n")
@@ -239,7 +228,7 @@ public class WebActivity extends AppCompatActivity {
         // memory leak --------------------
         String msgMemory = "FREE RAM : " + SysUtils.getFreeMemory(this) + " Mb";
         TextView textInfo = findViewById(R.id.memInfo);
-        textInfo.setText(pref + " • " + msgMemory);
+        textInfo.setText(preference.getBoolean("sw_log_screen", false) ? (pref + " • " + msgMemory) + " | test cycles • " + FullscreenActivity.test_cycles : "");
         // ********************************
     }
 
@@ -301,9 +290,9 @@ public class WebActivity extends AppCompatActivity {
             // System.out.println("trace | onPostExecute: " + strXML);
             // get a reference to the activity if it is still there
             WebActivity activity = activityReference.get();
-            if(activity==null)
+            if (activity == null) {
                 return;
-
+            }
             try {
                 JSONObject sendData = XML.toJSONObject(strXML);
                 // if (sendData != null) {
@@ -328,9 +317,8 @@ public class WebActivity extends AppCompatActivity {
         int swap_frequency = 86400000;
         // int swap_frequency = 20000;
         if (preference.getBoolean("sw_swap", true)) {
-            if (!SysUtils.isNight(
-                    preference.getString("start_day", "6"),
-                    preference.getString("start_night", "20"))) {
+
+            if (!SysUtils.isNight(preference)) {
                 String tempNumStr = preference.getString("swap_frequency", "1");
                 swap_frequency = Integer.parseInt(tempNumStr) * 60000;
             }
@@ -340,10 +328,10 @@ public class WebActivity extends AppCompatActivity {
     }
 
     // =========================================================
-    private void sendNextAction(String action, int cmd) {
+    private void sendNextAction(int cmd) {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("cmd", cmd);
-        resultIntent.putExtra("action", action);
+        resultIntent.putExtra("action", Constants.LOAD_SCREEN);
         setResult(RESULT_OK, resultIntent);
         finish();
     }
@@ -353,37 +341,13 @@ public class WebActivity extends AppCompatActivity {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("action", action);
         setResult(RESULT_OK, resultIntent);
-        System.out.println("trace | sendNextAction " + action );
+        System.out.println("trace | sendNextAction " + action);
         finish();
-    }
-
-    // ===================================
-    private void setBackLight() {
-        System.out.println("trace | setBackLight");
-
-        boolean night = SysUtils.isNight(
-                preference.getString("start_day", "6"),
-                preference.getString("start_night", "20"));
-
-        if (night) {
-            // ***********************************************
-            // set backLight should work in a separate thread
-            // working if Auto Set Backlight Screen is enabled
-            // ***********************************************
-            if (preference.getBoolean("sw_back_light", false)) {
-                SysUtils.setBackLight(this, true);
-            }
-        } else {
-            if (preference.getBoolean("sw_back_light", false)) {
-                SysUtils.setBackLight(this, false);
-            }
-        }
     }
 
     // =========================================================
     // External Command
     // =========================================================
-
     //==============================================
     private void decryptCommand(String data) {
         if (data == null) {
@@ -427,9 +391,11 @@ public class WebActivity extends AppCompatActivity {
     // ==============================================
     protected void runCMD(int cmd) {
         assert newWebView != null;
+        SysUtils.LogToScr(this, preference, "WebActivity | runCMD • " + cmd);
         switch (cmd) {
             case Constants.CMD_BACK:
-               // onBackPressed();
+                // onBackPressed();
+                finish();
                 break;
             case Constants.CMD_TIMER_SWAP:
                 newWebView.callbackToUI(JSConstants.CMD_SWAP);
@@ -446,7 +412,7 @@ public class WebActivity extends AppCompatActivity {
             case Constants.CMD_LOAD_STATS:
             case Constants.CMD_LOAD_TIMER:
             case Constants.CMD_LOAD_WEATHER:
-                sendNextAction(Constants.LOAD_SCREEN, cmd);
+                sendNextAction(cmd);
                 break;
             default:
                 Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();
