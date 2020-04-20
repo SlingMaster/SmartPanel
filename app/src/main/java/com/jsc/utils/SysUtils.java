@@ -32,7 +32,7 @@ public class SysUtils {
         if (preference.getBoolean("sw_log_screen", false)) {
             Toast.makeText(mainActivity, "APP STATE |  " + FullscreenActivity.app_state + "  |  " + log, Toast.LENGTH_SHORT).show();
         }
-        Log.d(("log • " + mainActivity.getClass().getName()), " | " + log);
+        Log.d(("log | " + mainActivity.getClass().getName()), " | " + log);
     }
 
     // ===================================
