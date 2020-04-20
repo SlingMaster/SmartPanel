@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,7 +48,7 @@ public class FullscreenActivity extends AppCompatActivity {
             String nextApp = intent.getStringExtra("next_app");
             if (nextApp != null) {
                 int slash = nextApp.lastIndexOf('/');
-                if(slash>=0)
+                if (slash >= 0)
                     nextApp = nextApp.substring(slash);
                 Toast.makeText(getBaseContext(), "Next: " + nextApp, Toast.LENGTH_SHORT).show();
             } else {
@@ -70,15 +69,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // set listeners for all buttons -------------------
     private void setupClickListeners() {
-        // show splash ------------------------
-        findViewById(R.id.btnShowCtrl).setOnClickListener(view -> {
-            View splash = findViewById(R.id.splash);
-            if (splash.getVisibility() == View.VISIBLE) {
-                splash.setVisibility(View.GONE);
-            } else {
-                splash.setVisibility(View.VISIBLE);
-            }
-        });
         findViewById(R.id.btn_exit).setOnClickListener(
                 view -> System.exit(0)
         );
