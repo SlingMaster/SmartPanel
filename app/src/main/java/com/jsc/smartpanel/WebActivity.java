@@ -41,6 +41,7 @@ public class WebActivity extends AppCompatActivity {
     Integer app_id;
     @Nullable
     CustomWebView newWebView;
+    private boolean isNight = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -377,7 +378,8 @@ public class WebActivity extends AppCompatActivity {
         switch (cmd) {
             case Constants.CMD_BACK_LIGHT:
                 if (json.has("state")) {
-                    SysUtils.setBackLight(this, json.optBoolean("state", true));
+                    isNight = json.optBoolean("state", true);
+                    SysUtils.setBackLight(this, isNight);
                 }
                 break;
             case Constants.CMD_DEBUG_MODE:
@@ -396,6 +398,10 @@ public class WebActivity extends AppCompatActivity {
             case Constants.CMD_BACK:
                 // onBackPressed();
                 finish();
+                break;
+            case Constants.CMD_BACK_LIGHT:
+                isNight = !isNight;
+                SysUtils.setBackLight(this, isNight);
                 break;
             case Constants.CMD_TIMER_SWAP:
                 newWebView.callbackToUI(JSConstants.CMD_SWAP);

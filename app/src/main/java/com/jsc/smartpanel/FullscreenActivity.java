@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,7 +26,6 @@ import org.json.JSONObject;
 import java.util.Objects;
 
 import androidx.appcompat.app.AppCompatActivity;
-import android.preference.PreferenceManager;
 
 public class FullscreenActivity extends AppCompatActivity {
 
@@ -239,19 +239,22 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     private void AnalyzerRemoteCMD(String jsonStr) {
-        SysUtils.LogToScr(this, preference, "AnalyzerRemote jsonStr : " + jsonStr);
+
         JSONObject json;
         int cmd = 0;
         try {
             json = new JSONObject(jsonStr);
+
             if (json.has("cmd")) {
                 cmd = json.optInt("cmd", 0);
             }
+            // SysUtils.LogToScr(this, preference, "AnalyzerRemote jsonStr : " + jsonStr);
+            SysUtils.LogToScr(this, preference, "AnalyzerRemoteCMD • " + jsonStr + " | CMD • " + cmd);
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        SysUtils.LogToScr(this, preference, "AnalyzerRemoteCMD • " + jsonStr + " | CMD • " + cmd);
+
         switch (cmd) {
             case Constants.CMD_RESTART:
                 SysUtils.restartApp(this);
