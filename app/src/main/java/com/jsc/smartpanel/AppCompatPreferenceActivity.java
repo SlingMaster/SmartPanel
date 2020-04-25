@@ -163,6 +163,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
             // settings advanced -------------------
             editor.putBoolean("sw_debug_mode", false);
             editor.putBoolean("sw_clear_cache", false);
+            editor.putBoolean("sw_log_screen", false);
             // settings schedule -------------------
             editor.putBoolean("sw_auto_start", true);
             editor.putBoolean("sw_back_light", true);

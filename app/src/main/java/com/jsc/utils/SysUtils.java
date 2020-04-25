@@ -12,8 +12,10 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -22,7 +24,16 @@ import com.jsc.smartpanel.FullscreenActivity;
 import java.util.Calendar;
 import java.util.List;
 
+import android.preference.PreferenceManager;
+
 public class SysUtils {
+    // ===================================
+    public static void LogToScr(Activity mainActivity, SharedPreferences preference, String log) {
+        if (preference.getBoolean("sw_log_screen", false)) {
+            Toast.makeText(mainActivity, "APP STATE |  " + FullscreenActivity.app_state + "  |  " + log, Toast.LENGTH_SHORT).show();
+        }
+        Log.d(("log | " + mainActivity.getClass().getName()), " | " + log);
+    }
 
     // ===================================
     public static long getFreeMemory(Activity mainActivity) {
@@ -42,9 +53,9 @@ public class SysUtils {
         if (sleep_mode) {
             layout.screenBrightness = 0.2F;
         } else {
-            layout.screenBrightness = 0.7F;
+            layout.screenBrightness = 0.6F;
         }
-        System.out.println("[ trace  ] setBackLight " + layout.screenBrightness);
+        LogToScr(mainActivity, PreferenceManager.getDefaultSharedPreferences(mainActivity), "Set BackLight : " + layout.screenBrightness);
         mainActivity.getWindow().setAttributes(layout);
     }
 
@@ -72,7 +83,7 @@ public class SysUtils {
                 activityManager.killBackgroundProcesses(packageInfo.packageName);
             }
         }
-        Toast.makeText(mainActivity, "Killed All Background Process", Toast.LENGTH_SHORT).show();
+        LogToScr(mainActivity, PreferenceManager.getDefaultSharedPreferences(mainActivity), "Killed All Background Process");
     }
 
     // ===================================
@@ -80,6 +91,7 @@ public class SysUtils {
         // reboot main application -------
         Context context = mainActivity.getApplicationContext();
         Intent mStartActivity = new Intent(context, FullscreenActivity.class);
+        mStartActivity.putExtra("next_app", "none");
         int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
 //        mStartActivity.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -91,12 +103,12 @@ public class SysUtils {
     }
 
     // ===================================
-    public static void restartApp(Activity mainActivity, String nextApp, boolean nextKill) {
+    public static void restartApp(Activity mainActivity, String nextApp) {
         // reboot main application & load next app
         Context context = mainActivity.getApplicationContext();
         Intent mStartActivity = new Intent(context, FullscreenActivity.class);
         mStartActivity.putExtra("next_app", nextApp);
-        mStartActivity.putExtra("next_kill", nextKill);
+        // mStartActivity.putExtra("next_kill", nextKill);
         int mPendingIntentId = PendingIntent.FLAG_UPDATE_CURRENT;
         PendingIntent mPendingIntent = PendingIntent.getActivity(context, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -107,7 +119,18 @@ public class SysUtils {
     }
 
     // ===================================
-    public static boolean isNight(String startDay, String startNight) {
+    public static boolean isNight(SharedPreferences preference) {
+        int start_day = Integer.parseInt(preference.getString("start_day", "6"));
+        int start_night = Integer.parseInt(preference.getString("start_night", "20"));
+        int pm = Calendar.getInstance().get(Calendar.AM_PM);
+        int hh = Calendar.getInstance().get(Calendar.HOUR) + pm * 12;
+        return (hh >= start_night || hh < start_day);
+    }
+
+    // ===================================
+//    public static boolean isNight(String startDay, String startNight) {
+
+
 //        // get the supported ids for GMT-08:00 (Pacific Standard Time)
 //        String[] ids = TimeZone.getAvailableIDs(-8 * 60 * 60 * 1000);
 //        // if no ids were returned, something is wrong. get out.
@@ -131,12 +154,12 @@ public class SysUtils {
 //        calendar.setTime(curTime);
 //        calendar.set(Calendar.HOUR_OF_DAY, 24);
 
-        int pm = Calendar.getInstance().get(Calendar.AM_PM);
-        int hh = Calendar.getInstance().get(Calendar.HOUR) + pm * 12;
-        int start_day = Integer.parseInt(startDay);
-        int start_night = Integer.parseInt(startNight);
-        return (hh >= start_night || hh < start_day);
-    }
+//        int pm = Calendar.getInstance().get(Calendar.AM_PM);
+//        int hh = Calendar.getInstance().get(Calendar.HOUR) + pm * 12;
+//        int start_day = Integer.parseInt(startDay);
+//        int start_night = Integer.parseInt(startNight);
+//        return (hh >= start_night || hh < start_day);
+//    }
 
     // ===================================
 //    private void backPrevApp(String curApp) {
@@ -163,23 +186,5 @@ public class SysUtils {
 //        return false;
 //    }
 
-    // ===================================
-//    private void backMain() {
-//        Intent intent = getPackageManager().getLaunchIntentForPackage(Constants.PACKAGES[0]);
-//        if (intent != null) {
-//            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//            // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-//            // intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-//            // Bundle is optional --------------
-////            Bundle bundle = new Bundle();
-////            bundle.putInt("lastCMD", lastCMD);
-////            intent.putExtras(bundle);
-//            //  end Bundle ---------------------
-//            startActivity(intent);
-//            View splash = findViewById(R.id.splash);
-//            if (splash.getVisibility() == View.GONE) {
-//                splash.setVisibility(View.VISIBLE);
-//            }
-//        }
-//    }
+
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -37,6 +38,19 @@
                 android:background="@drawable/btn_power"
                 android:focusable="false"
                 android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/debug_ico"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/ic_size"
+                android:layout_gravity="top"
+                android:layout_marginTop="@dimen/ic_margin_top"
+                android:contentDescription="@string/about_app_title"
+                android:paddingLeft="@dimen/ic_margin_left"
+                android:paddingRight="@dimen/ic_margin_left"
+                android:tint="@android:color/holo_red_dark"
+                app:srcCompat="@drawable/ic_debug" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -153,20 +167,6 @@
         </LinearLayout>
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btnShowCtrl"
-        style="?android:attr/buttonBarButtonStyle"
-        android:layout_width="@android:dimen/app_icon_size"
-        android:layout_height="@android:dimen/app_icon_size"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginLeft="@dimen/btn_margin"
-        android:layout_marginRight="@dimen/btn_margin"
-        android:layout_marginBottom="@dimen/def_margin"
-        android:background="@drawable/btn_more"
-        android:focusable="false"
-        android:gravity="center_horizontal"
-        android:visibility="gone" />
 
     <TextView
         android:id="@+id/memInfo"

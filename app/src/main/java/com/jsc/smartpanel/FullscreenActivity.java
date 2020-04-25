@@ -13,13 +13,15 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jsc.utils.GlobalUtils;
 import com.jsc.utils.SysUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Objects;
 
@@ -29,40 +31,39 @@ public class FullscreenActivity extends AppCompatActivity {
 
     CommunicationServer communicationServer;
     public static SharedPreferences preference;
-    public boolean isActivityBackground = true;
     private long back_pressed;
     private int cur_screen = 0;
+    public static int app_state = Constants.MAIN;
 
-    private Boolean nextKill;
-    private int test_cycles = 0;
+    public static int test_cycles = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        runKillAllProcess();
         preference = PreferenceManager.getDefaultSharedPreferences(this);
 
         Intent intent = getIntent();
-        System.out.println("trace | MAIN | onCreate");
+
         if (intent != null) {
             // "next app" --------------------------
             String nextApp = intent.getStringExtra("next_app");
             if (nextApp != null) {
                 int slash = nextApp.lastIndexOf('/');
-                if(slash>=0)
+                if (slash >= 0) {
                     nextApp = nextApp.substring(slash);
-                Toast.makeText(getBaseContext(), "Next: " + nextApp, Toast.LENGTH_SHORT).show();
+                }
             } else {
                 // first start -------------------------
+                nextApp = "timer.html";
                 Handler handler = new Handler();
                 handler.postDelayed(() -> externalCMD(Constants.CMD_LOAD_TIMER), 2000);
             }
-
-            // "next app to kill --------------------------
-            nextKill = intent.getBooleanExtra("next_kill", false);
+            // -----------------------------------------
+            SysUtils.LogToScr(this, preference, "Run App:" + nextApp);
         }
 
         setContentView(R.layout.activity_fullscreen);
+
         // Device set port ---------------------
         communicationServer = new CommunicationServer(this, Constants.SERVER_PORT);
         setupClickListeners();
@@ -70,15 +71,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // set listeners for all buttons -------------------
     private void setupClickListeners() {
-        // show splash ------------------------
-        findViewById(R.id.btnShowCtrl).setOnClickListener(view -> {
-            View splash = findViewById(R.id.splash);
-            if (splash.getVisibility() == View.VISIBLE) {
-                splash.setVisibility(View.GONE);
-            } else {
-                splash.setVisibility(View.VISIBLE);
-            }
-        });
         findViewById(R.id.btn_exit).setOnClickListener(
                 view -> System.exit(0)
         );
@@ -90,13 +82,13 @@ public class FullscreenActivity extends AppCompatActivity {
             startActivity(configIntent);
         });
         // menu list applications ------------------------
-        findViewById(R.id.btn_radio).setOnClickListener(view -> externalCMD(Constants.CMD_RADIO));
+        findViewById(R.id.btn_radio).setOnClickListener(view -> runExternalApplication(1));
         findViewById(R.id.btn_smart).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_SMART));
         findViewById(R.id.btn_stats).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_STATS));
         findViewById(R.id.btn_timer).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_TIMER));
         findViewById(R.id.btn_weather).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_WEATHER));
-        findViewById(R.id.btn_sling).setOnClickListener(view -> externalCMD(Constants.CMD_SLING));
-        findViewById(R.id.btn_wifi).setOnClickListener(view -> externalCMD(Constants.CMD_WIFI_SCANNER));
+        findViewById(R.id.btn_sling).setOnClickListener(view -> runExternalApplication(2));
+        findViewById(R.id.btn_wifi).setOnClickListener(view -> runExternalApplication(3));
     }
 
     // ====================================
@@ -117,7 +109,6 @@ public class FullscreenActivity extends AppCompatActivity {
                 id = 2;
                 break;
         }
-        // Toast.makeText(getBaseContext(), "getHtml ID • " + id, Toast.LENGTH_SHORT).show();
         return id;
     }
 
@@ -126,7 +117,6 @@ public class FullscreenActivity extends AppCompatActivity {
         Intent intent = new Intent(this, WebActivity.class);
         intent.putExtra("app_id", app_id);
         // intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        // Toast.makeText(getBaseContext(), "openWebView ID • " + app_id, Toast.LENGTH_SHORT).show();
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivityForResult(intent, Constants.REQUEST_ACTIVITY_CODE);
     }
@@ -142,8 +132,6 @@ public class FullscreenActivity extends AppCompatActivity {
     // ===================================
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        System.out.println("trace • MAIN | onActivityResult | " + resultCode);
-//        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == Constants.REQUEST_ACTIVITY_CODE) {
                 String action = data.getStringExtra("action");
@@ -155,7 +143,7 @@ public class FullscreenActivity extends AppCompatActivity {
                             swapScreen();
                             break;
                         case Constants.SYNC:
-                            Toast.makeText(this, "Sync Data", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(this, "Sync Data", Toast.LENGTH_SHORT).show();
                             break;
                         case Constants.WOKE_UP:
                             runApplication(Constants.CMD_LOAD_WEATHER);
@@ -164,10 +152,7 @@ public class FullscreenActivity extends AppCompatActivity {
                             runApplication(Constants.CMD_LOAD_TIMER);
                             break;
                         case Constants.LOAD_SCREEN:
-                            Toast.makeText(this, "LOAD_SCREEN | CMD • " + cmd, Toast.LENGTH_SHORT).show();
-                            if (cmd > 9) {
-                                runApplication(cmd);
-                            }
+                            runApplication(cmd);
                             break;
                         default:
                             break;
@@ -178,7 +163,6 @@ public class FullscreenActivity extends AppCompatActivity {
             }
         } else {
             System.out.println("trace • MAIN | onActivityResult | Wrong result");
-            Toast.makeText(this, "Wrong result", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -186,17 +170,15 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         Objects.requireNonNull(getSupportActionBar()).hide();
         // GlobalUtils.hideSystemUI(webContainer);
-        nextKill = false;
         if (!GlobalUtils.isConnectedToInternet(getApplicationContext())) {
             Toast.makeText(getApplicationContext(),
                     getString(R.string.msg_not_wifi_connection), Toast.LENGTH_LONG).show();
         }
-
         watchDog();
-        isActivityBackground = false;
+        app_state = Constants.MAIN;
+        showDebugIcon(preference);
     }
 
     @Override
@@ -207,7 +189,6 @@ public class FullscreenActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        isActivityBackground = true;
         System.out.println("trace | =============  MAIN  ACTIVITY == onPause");
     }
 
@@ -226,7 +207,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     public void updateOnUIThread(String str) {
-        Log.d("net message", str);
         runOnUiThread(new UpdateUIRunnable(str));
     }
 
@@ -248,9 +228,9 @@ public class FullscreenActivity extends AppCompatActivity {
         // ----------------------------
         @Override
         public void run() {
+            // Transmitted External Command  from Desktop Client
             if (jsonStr != null) {
-                // Transmitted External Command  from Desktop Client
-                sendCmdToWebView(jsonStr);
+                AnalyzerRemoteCMD(jsonStr);
             } else {
                 externalCMD(command);
             }
@@ -258,37 +238,57 @@ public class FullscreenActivity extends AppCompatActivity {
     }
 
     // ===================================
-    private void externalCMD(int cmd) {
-        // TODO debug must remove
-        Toast.makeText(getBaseContext(), "Transmitted External Command • $" + String.format("%X", cmd) + " | DEC • " + cmd, Toast.LENGTH_SHORT).show();
+    private void AnalyzerRemoteCMD(String jsonStr) {
+
+        JSONObject json;
+        int cmd = 0;
+        try {
+            json = new JSONObject(jsonStr);
+
+            if (json.has("cmd")) {
+                cmd = json.optInt("cmd", 0);
+            }
+            // SysUtils.LogToScr(this, preference, "AnalyzerRemote jsonStr : " + jsonStr);
+            SysUtils.LogToScr(this, preference, "AnalyzerRemoteCMD • " + jsonStr + " | CMD • " + cmd);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
         switch (cmd) {
             case Constants.CMD_RESTART:
                 SysUtils.restartApp(this);
                 break;
+            case Constants.CMD_HOME:
+                if (app_state == Constants.INTERNAL) {
+                    sendCmdToWebView("{cmd:" + Constants.CMD_BACK + "}");
+                }
+                if (app_state == Constants.EXTERNAL) {
+                    SysUtils.restartApp(this);
+                }
+                break;
             case Constants.CMD_BACK:
-                onBackPressed();
+                if (app_state == Constants.INTERNAL) {
+                    sendCmdToWebView(jsonStr);
+                } else {
+                    if (app_state == Constants.MAIN) {
+                        onBackPressed();
+                    } else {
+                        SysUtils.restartApp(this);
+                    }
+                }
                 break;
             case Constants.CMD_DEBUG_MODE:
+                setSwitch(preference, "sw_log_screen");
+                showDebugIcon(preference);
                 break;
-
+            case Constants.CMD_AUTO_SWAP:
+                setSwitch(preference, "sw_swap");
+                break;
             // ===========================
-            // Menu ======================
-            // ===========================
+            // external app --------------
             case Constants.CMD_RADIO:
                 runExternalApplication(1);
-
-                break;
-            // html app ------------------
-            case Constants.CMD_LOAD_SMART:
-            case Constants.CMD_LOAD_STATS:
-            case Constants.CMD_LOAD_TIMER:
-            case Constants.CMD_LOAD_WEATHER:
-                if (isActivityBackground) {
-                    sendCmdToWebView("{cmd:" + Constants.CMD_BACK + "}");
-                    nextKill = false;
-                } else {
-                    runApplication(cmd);
-                }
                 break;
             // --------------------------
             case Constants.CMD_SLING:
@@ -300,16 +300,85 @@ public class FullscreenActivity extends AppCompatActivity {
                 break;
             // ===========================
             default:
-                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();
+                if (app_state == Constants.INTERNAL) {
+                    sendCmdToWebView(jsonStr);
+                } else {
+                    // load html application
+                    openWebView(getHtmlID(cmd));
+                }
+                break;
+        }
+
+    }
+
+    // ===================================
+    private void setSwitch(SharedPreferences preference, String key) {
+        boolean flag = preference.getBoolean(key, false);
+        SharedPreferences.Editor editor = preference.edit();
+        editor.putBoolean(key, !flag);
+        editor.apply();
+        SysUtils.LogToScr(this, preference, "Switch " + key + " • " + (!flag ? "ON" : "OFF"));
+    }
+
+    // ===================================
+    private void showDebugIcon(SharedPreferences preference) {
+        View ico = findViewById(R.id.debug_ico);
+        if (preference.getBoolean("sw_log_screen", false)) {
+            ico.setVisibility(View.VISIBLE);
+        } else {
+            ico.setVisibility(View.GONE);
+        }
+    }
+
+    // ===================================
+    private void externalCMD(int cmd) {
+        // TODO debug must remove
+        SysUtils.LogToScr(this, preference, "Transmitted External Command • $" + String.format("%X", cmd) + " | DEC • " + cmd);
+        switch (cmd) {
+            case Constants.CMD_BACK:
+                onBackPressed();
+                break;
+
+            // ===========================
+            // Menu ======================
+            // ===========================
+            // html app ------------------
+            case Constants.CMD_LOAD_SMART:
+            case Constants.CMD_LOAD_STATS:
+            case Constants.CMD_LOAD_TIMER:
+            case Constants.CMD_LOAD_WEATHER:
+                if (app_state == Constants.EXTERNAL) {
+                    SysUtils.restartApp(this);
+                    return;
+                }
+                if (app_state == Constants.INTERNAL) {
+                    sendCmdToWebView("{cmd:" + Constants.CMD_BACK + "}");
+                } else {
+                    runApplication(cmd);
+                }
+                // set BackLight after load html app
+                setBackLight();
+                break;
+            // ===========================
+            default:
+                SysUtils.LogToScr(this, preference, getResources().getString(R.string.msg_unsupported));
                 break;
         }
     }
 
     // ===================================
+    private void setBackLight() {
+        boolean night = SysUtils.isNight(preference);
+        Handler handler = new Handler();
+        handler.postDelayed(() -> sendCmdToWebView(
+                "{cmd:" + Constants.CMD_BACK_LIGHT + ",json:{state:" + night + "}}"
+        ), 5000);
+    }
+
+    // ===================================
     private void runApplication(int cmd) {
-        if (nextKill) {
-            SysUtils.restartApp(this, Constants.HTML_APPS[getHtmlID(cmd)], true);
-            nextKill = false;
+        if (app_state == Constants.EXTERNAL) {
+            SysUtils.restartApp(this, Constants.HTML_APPS[getHtmlID(cmd)]);
         } else {
             // load next html application
             openWebView(getHtmlID(cmd));
@@ -320,10 +389,11 @@ public class FullscreenActivity extends AppCompatActivity {
     private void runExternalApplication(int app_idx) {
         Intent intent = getPackageManager().getLaunchIntentForPackage(Constants.PACKAGES[app_idx]);
         if (intent != null) {
-            nextKill = true;
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_HISTORY);
+            app_state = Constants.EXTERNAL;
             startActivity(intent);
         } else {
+            app_state = Constants.MAIN;
             Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_app_not_installed), Toast.LENGTH_SHORT).show();
         }
     }
@@ -342,30 +412,23 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ===================================
     public void swapScreen() {
-        nextKill = false;
         cur_screen++;
         int length = preference.getBoolean("sw_all_swap", false) ? Constants.SWAP_APPS.length : 2;
-        if (cur_screen >= length) {
+        if (cur_screen >= length || SysUtils.isNight(preference)) {
             cur_screen = 0;
         }
-        Toast.makeText(getBaseContext(), "Swap Screen • " + cur_screen, Toast.LENGTH_SHORT).show();
-        System.out.println("trace • MAIN | Swap Screen | next • " + cur_screen);
+        SysUtils.LogToScr(this, preference, "Swap Screen • " + cur_screen);
         new Handler().post(new UpdateUIRunnable(Constants.SWAP_APPS[cur_screen]));
     }
 
     // ===================================
-    private void runKillAllProcess() {
-        SysUtils.killAllProcess(this);
-        nextKill = false;
-        // all processes are already killed ---------------
-    }
-
-    // ===================================
     private void watchDog() {
-        // restart app if low memory
+        // restart app if low memory ---------------
         long memSize = SysUtils.getFreeMemory(this);
         if (memSize < 150) {
             SysUtils.restartApp(this);
+        } else {
+            SysUtils.killAllProcess(this);
         }
 
         // ********************************
@@ -375,62 +438,7 @@ public class FullscreenActivity extends AppCompatActivity {
         test_cycles++;
         String msgMemory = "FREE RAM : " + memSize + " Mb | CYCLES : " + test_cycles;
         TextView textInfo = findViewById(R.id.memInfo);
-        textInfo.setText(msgMemory);
+        textInfo.setText(preference.getBoolean("sw_log_screen", false) ? msgMemory : "");
         // ********************************
     }
-
-    // ===================================
-    // Swap Screen Timer
-    // ===================================
-
-    // ===================================
-//    private void startTimer() {
-//        // ***********************************************
-//        // work if Auto Swap Screens is enabled
-//        // only during the daytime
-//        // ***********************************************
-//        if (preference.getBoolean("sw_swap", true)) {
-//            if (SysUtils.isNight(
-//                    preference.getString("start_day", "6"),
-//                    preference.getString("start_night", "20"))) {
-//                System.out.println("traceSW | Next stopTimer");
-//                stopTimer();
-//                new Handler().post(new UpdateUIRunnable(Constants.CMD_LOAD_TIMER));
-//            } else {
-//                if (timer == null) {
-//                    // System.out.println("traceSW | startTimer");
-//                    String tempNumStr = preference.getString("swap_frequency", "1");
-//                    int swap_frequency = Integer.parseInt(tempNumStr) * 60000;
-//                    timer = new Timer();
-//                    swapTimerTask = new SwapTimerTask();
-//                    timer.schedule(swapTimerTask, 60000, swap_frequency);
-//                }
-//            }
-//        }
-//    }
-
-//    // ===================================
-//    private void stopTimer() {
-//        if (timer != null) {
-//            timer.cancel();
-//            timer = null;
-//            swapTimerTask = null;
-//        }
-//    }
-//
-//    // ===================================
-//    class SwapTimerTask extends TimerTask {
-//        @Override
-//        public void run() {
-//
-//            // --------------------------
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    System.out.println("traceSW | Swap Timer Task ");
-//                    swapScreen();
-//                }
-//            });
-//        }
-//    }
 }
