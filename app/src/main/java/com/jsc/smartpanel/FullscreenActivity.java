@@ -242,11 +242,17 @@ public class FullscreenActivity extends AppCompatActivity {
 
         JSONObject json;
         int cmd = 0;
+        boolean state = false;
+        boolean is_state = false;
         try {
             json = new JSONObject(jsonStr);
 
             if (json.has("cmd")) {
                 cmd = json.optInt("cmd", 0);
+            }
+            is_state = json.has("state");
+            if (is_state) {
+                state = json.getBoolean("state");
             }
             // SysUtils.LogToScr(this, preference, "AnalyzerRemote jsonStr : " + jsonStr);
             SysUtils.LogToScr(this, preference, "AnalyzerRemoteCMD • " + jsonStr + " | CMD • " + cmd);
@@ -258,6 +264,9 @@ public class FullscreenActivity extends AppCompatActivity {
         switch (cmd) {
             case Constants.CMD_RESTART:
                 SysUtils.restartApp(this);
+                break;
+            case Constants.CMD_EXIT:
+                finish();
                 break;
             case Constants.CMD_HOME:
                 if (app_state == Constants.INTERNAL) {
@@ -279,11 +288,19 @@ public class FullscreenActivity extends AppCompatActivity {
                 }
                 break;
             case Constants.CMD_DEBUG_MODE:
-                setSwitch(preference, "sw_log_screen");
+                if (is_state) {
+                    setSwitch(preference, "sw_log_screen", state);
+                } else {
+                    setSwitch(preference, "sw_log_screen");
+                }
                 showDebugIcon(preference);
                 break;
             case Constants.CMD_AUTO_SWAP:
-                setSwitch(preference, "sw_swap");
+                if (is_state) {
+                    setSwitch(preference, "sw_swap", state);
+                } else {
+                    setSwitch(preference, "sw_swap");
+                }
                 break;
             // ===========================
             // external app --------------
@@ -316,6 +333,14 @@ public class FullscreenActivity extends AppCompatActivity {
         boolean flag = preference.getBoolean(key, false);
         SharedPreferences.Editor editor = preference.edit();
         editor.putBoolean(key, !flag);
+        editor.apply();
+        SysUtils.LogToScr(this, preference, "Switch " + key + " • " + (!flag ? "ON" : "OFF"));
+    }
+
+    // ===================================
+    private void setSwitch(SharedPreferences preference, String key, boolean flag) {
+        SharedPreferences.Editor editor = preference.edit();
+        editor.putBoolean(key, flag);
         editor.apply();
         SysUtils.LogToScr(this, preference, "Switch " + key + " • " + (!flag ? "ON" : "OFF"));
     }

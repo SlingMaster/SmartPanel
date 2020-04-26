@@ -18,6 +18,7 @@ class Constants {
     static final int CMD_BACK = 0x03;
     static final int CMD_BACK_LIGHT = 0x04;
     static final int CMD_AUTO_SWAP = 0x05;
+    static final int CMD_EXIT = 0x07;
     static final int CMD_DEBUG_MODE = 0x09;
 
     // main menu cmd code ------------------------
