@@ -56,7 +56,7 @@ public class FullscreenActivity extends AppCompatActivity {
                 // first start -------------------------
                 nextApp = "timer.html";
                 Handler handler = new Handler();
-                handler.postDelayed(() -> externalCMD(Constants.CMD_LOAD_TIMER), 2000);
+                handler.postDelayed(() -> externalCMD(Constants.CMD_LOAD_TIMER), 2500);
             }
             // -----------------------------------------
             SysUtils.LogToScr(this, preference, "Run App:" + nextApp);
