@@ -1,0 +1,127 @@
+{
+   "screens" : [
+      {
+         "cmd" : 0,
+         "external" : false,
+         "icon" : "ic_home.png",
+         "items" : [
+            {
+               "cmd" : 1,
+               "desc" : "Restart Smart Panel",
+               "icon" : "ic_restart.png",
+               "name" : "Restart",
+               "toggle" : false
+            },
+            {
+               "cmd" : 7,
+               "desc" : "Close Smart Panel Application",
+               "icon" : "ic_close.png",
+               "name" : "Close Application",
+               "toggle" : false
+            }
+         ],
+         "program" : "Home Screen"
+      },
+      {
+         "cmd" : 10,
+         "external" : true,
+         "icon" : "grp_radio.png",
+         "items" : [],
+         "program" : "Internet Radio"
+      },
+      {
+         "cmd" : 20,
+         "external" : false,
+         "icon" : "grp_smart.png",
+         "items" : [],
+         "program" : "Smart Home"
+      },
+      {
+         "cmd" : 30,
+         "external" : false,
+         "icon" : "grp_stats.png",
+         "items" : [],
+         "program" : "Hot Water Statistic"
+      },
+      {
+         "cmd" : 40,
+         "external" : false,
+         "icon" : "grp_timer.png",
+         "items" : [
+            {
+               "cmd" : 41,
+               "desc" : "Night or Day Mode",
+               "icon" : "ic_timer.png",
+               "name" : "Swap Time Mode",
+               "toggle" : false
+            }
+         ],
+         "program" : "Analog & Digital Time"
+      },
+      {
+         "cmd" : 50,
+         "external" : false,
+         "icon" : "grp_weather.png",
+         "items" : [
+            {
+               "cmd" : 51,
+               "desc" : "More Weather per Day",
+               "icon" : "ic_details.png",
+               "name" : "More Forecast",
+               "toggle" : false
+            },
+            {
+               "cmd" : 52,
+               "desc" : "Run Script Magic Season",
+               "icon" : "ic_magic.png",
+               "name" : "Magic Season",
+               "toggle" : false
+            }
+         ],
+         "program" : "Weather Forecast"
+      },
+      {
+         "cmd" : 60,
+         "external" : true,
+         "icon" : "grp_slingplayer.png",
+         "items" : [],
+         "program" : "Sling Player"
+      },
+      {
+         "cmd" : 70,
+         "external" : true,
+         "icon" : "ic_wifi_scanner.png",
+         "items" : [],
+         "program" : "Wi-Fi Analytics Tool"
+      },
+      {
+         "cmd" : 99,
+         "external" : false,
+         "icon" : "grp_settings.png",
+         "items" : [
+            {
+               "cmd" : 4,
+               "desc" : "Set Backlight for Night or Day",
+               "icon" : "ic_light.png",
+               "name" : "Night Mode",
+               "toggle" : true
+            },
+            {
+               "cmd" : 5,
+               "desc" : "Auto Swap Screen ON/OFF",
+               "icon" : "ic_swap.png",
+               "name" : "Auto Swap Screen",
+               "toggle" : true
+            },
+            {
+               "cmd" : 9,
+               "desc" : "Show/Hide Log for Screen Panel",
+               "icon" : "ic_log.png",
+               "name" : "Show Log",
+               "toggle" : true
+            }
+         ],
+         "program" : "Configure Smart Panel"
+      }
+   ]
+}
