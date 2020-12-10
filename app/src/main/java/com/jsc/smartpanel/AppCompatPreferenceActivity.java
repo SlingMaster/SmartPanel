@@ -25,6 +25,8 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.jsc.utils.GlobalUtils;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * A {@link android.preference.PreferenceActivity} which implements and proxies the necessary calls
  * to be used with AppCompat.
@@ -96,7 +98,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NotNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         getDelegate().onConfigurationChanged(newConfig);
     }
@@ -161,6 +163,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
             editor.putString("ip_bathroom", getResources().getString(R.string.def_node_bathroom_url));
             editor.putString("chip_bathroom", getResources().getString(R.string.def_node_bathroom_chip));
             // settings advanced -------------------
+            editor.putString("link_list", getResources().getString(R.string.station_url));
             editor.putBoolean("sw_debug_mode", false);
             editor.putBoolean("sw_clear_cache", false);
             editor.putBoolean("sw_log_screen", false);
@@ -180,7 +183,6 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
     // ----------------------------------------
     private String getIP() {
         String ipAddress;
-        SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(this);
         ipAddress = GlobalUtils.getIP() + " : " + Constants.SERVER_PORT;
         return ipAddress;
     }

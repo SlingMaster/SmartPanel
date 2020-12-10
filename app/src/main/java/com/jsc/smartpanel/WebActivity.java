@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2020
+ * Jeneral Samopal Company
+ * Programming by Alex Uchitel
+ * Design and Programming by Alex Dovby
+ */
 package com.jsc.smartpanel;
 
 import android.annotation.SuppressLint;
@@ -11,7 +17,6 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jsc.smartpanel.html.CustomWebView;
 import com.jsc.smartpanel.html.JSConstants;
@@ -132,8 +137,12 @@ public class WebActivity extends AppCompatActivity {
     // HTML APP request events
     // ===================================================
     public void webViewEvents(int request, final String jsonString) {
+        String list_url = preference.getBoolean("sw_debug_mode", false)
+                ? getResources().getString(R.string.debug_station_url) :
+                preference.getString("link_list", getResources().getString(R.string.debug_station_url));
         JSONObject requestContent = new JSONObject();
-
+        System.out.println("trace | webViewEvents [ " + request + " ] | json " + jsonString);
+        SysUtils.LogToScr(this, preference, "webViewEvents [ " + request + " ] | json " + jsonString);
         JSONObject uiRequest;
         try {
             uiRequest = new JSONObject(jsonString);
@@ -154,15 +163,25 @@ public class WebActivity extends AppCompatActivity {
                 break;
             case JSConstants.EVT_READY:
                 assert newWebView != null;
+                System.out.println("trace initData : " + initData(this).toString());
                 newWebView.callbackToUI(JSConstants.CMD_INIT, CustomWebView.createResponse(requestContent, initData(this)));
                 break;
             case JSConstants.EVT_WEATHER:
                 new WebActivity.ReadXmlTask(this, getResources().getString(R.string.weather_xml)).execute();
                 break;
-            case JSConstants.EVT_NEXT:
+            case JSConstants.EVT_FM_LIST:
+                new WebActivity.ReadJsonTask(this, list_url).execute();
                 break;
-            case JSConstants.EVT_SYNC:
-                // sendNextAction(Constants.SYNC);
+            case JSConstants.EVT_MUTE:
+                SysUtils.Mute(this, requestContent.optBoolean("state"));
+                break;
+            case JSConstants.EVT_SAVE_PREFS:
+                SharedPreferences.Editor editor = preference.edit();
+                editor.putString("prefs", jsonString);
+                editor.apply();
+                assert newWebView != null;
+                // newWebView.callbackToUI(JSConstants.CMD_EXO, requestContent);
+                newWebView.callbackToUI(JSConstants.CMD_EXO, CustomWebView.createResponse(requestContent, requestContent));
                 break;
             case JSConstants.EVT_WOKE_UP:
                 // LOAD_WEATHER --------
@@ -196,7 +215,8 @@ public class WebActivity extends AppCompatActivity {
             obj.put("chip_weather", preference.getString("chip_weather", GlobalUtils.getString(context, R.string.def_node_weather_chip)));
             obj.put("chip_bathroom", preference.getString("chip_bathroom", GlobalUtils.getString(context, R.string.def_node_bathroom_chip)));
             obj.put("auto_start_night_mode", preference.getBoolean("sw_auto_start", false));
-
+            obj.put("prefs", preference.getString("prefs", null));
+            System.out.println("initData [ " + preference.getString("prefs", ""));
             // string to int ---------------------
             String tempNumStr = preference.getString("start_day", "6");
             int num = Integer.parseInt(tempNumStr);
@@ -212,10 +232,10 @@ public class WebActivity extends AppCompatActivity {
         return obj;
     }
 
-    // -----------------------------------
+    // ----------------------------------------
     void onPageFinished() {
         Handler handler = new Handler();
-//        Toast.makeText(getBaseContext(), "TimeOut • " + (getTimeout() / 60000) + " min", Toast.LENGTH_SHORT).show();
+        // Toast.makeText(getBaseContext(), "TimeOut • " + (getTimeout() / 60000) + " min", Toast.LENGTH_SHORT).show();
         SysUtils.LogToScr(this, preference, "TimeOut • " + (getTimeout() / 60000) + " min");
         handler.postDelayed(() -> sendNextAction(Constants.SWAP_SCREEN), getTimeout());
     }
@@ -231,6 +251,77 @@ public class WebActivity extends AppCompatActivity {
         TextView textInfo = findViewById(R.id.memInfo);
         textInfo.setText(preference.getBoolean("sw_log_screen", false) ? (pref + " • " + msgMemory) + " | test cycles • " + FullscreenActivity.test_cycles : "");
         // ********************************
+    }
+
+    // =========================================================
+    // Read JSON Radio List
+    // =========================================================
+    private static class ReadJsonTask extends AsyncTask<Void, Void, String> {
+        // private WeakReference<FullscreenActivity> activityReference;
+        private WeakReference<WebActivity> activityReference;
+        private final String listUrl;
+
+        HttpURLConnection urlConnection;
+        BufferedReader reader;
+        String result = "";
+
+        // ----------------------------
+        // only retain a weak reference to the activity
+        ReadJsonTask(WebActivity activity, @NonNull String list_url) {
+            activityReference = new WeakReference<>(activity);
+            listUrl = list_url;
+        }
+
+        // ----------------------------
+        @Override
+        protected String doInBackground(Void... params) {
+            // System.out.println("trace | list_url : " + list_url);
+            try {
+
+                URL url = new URL(listUrl);
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+                InputStream inputStream = urlConnection.getInputStream();
+                // ------------------
+
+                StringBuilder buffer = new StringBuilder();
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line);
+                }
+
+                result = buffer.toString();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                // System.out.println("Error load list_url : " + resultXML);
+                result = "{fm:[]}";
+            }
+
+            return result;
+        }
+
+        // ----------------------------
+        @Override
+        protected void onPostExecute(String strJSON) {
+            super.onPostExecute(strJSON);
+            // System.out.println("trace | onPostExecute: " + strXML);
+            // get a reference to the activity if it is still there▬
+            WebActivity activity = activityReference.get();
+            if (activity == null) {
+                return;
+            }
+            try {
+                JSONObject sendData = new JSONObject(strJSON);
+                assert activity.newWebView != null;
+                activity.newWebView.callbackToUI(JSConstants.CMD_FM_DATA, CustomWebView.createResponse(null, sendData));
+            } catch (JSONException e) {
+                System.out.println("Unexpected JSON exception" + e);
+            }
+        }
     }
 
     // =========================================================
@@ -280,7 +371,6 @@ public class WebActivity extends AppCompatActivity {
                 // System.out.println("Error load list_url : " + resultXML);
                 resultXML = "{weather:[]}";
             }
-
             return resultXML;
         }
 
@@ -296,10 +386,8 @@ public class WebActivity extends AppCompatActivity {
             }
             try {
                 JSONObject sendData = XML.toJSONObject(strXML);
-                // if (sendData != null) {
                 assert activity.newWebView != null;
                 activity.newWebView.callbackToUI(JSConstants.CMD_WEATHER_DATA, CustomWebView.createResponse(null, sendData));
-                // }
             } catch (JSONException e) {
                 System.out.println("Unexpected JSON exception" + e);
             }
@@ -316,7 +404,11 @@ public class WebActivity extends AppCompatActivity {
     private int getTimeout() {
         // delay 24 hours ------------
         int swap_frequency = 86400000;
-        // int swap_frequency = 20000;
+        if (app_id == 4) {
+            // not swap if work radio application
+            return swap_frequency;
+        }
+
         if (preference.getBoolean("sw_swap", true)) {
 
             if (!SysUtils.isNight(preference)) {
@@ -355,6 +447,7 @@ public class WebActivity extends AppCompatActivity {
             System.out.println("decryptCommand | data null");
             return;
         }
+//        Toast.makeText(getBaseContext(),  "WB decryptCommand | " + data, Toast.LENGTH_LONG ).show();
         try {
             JSONObject clientRequest = new JSONObject(data);
             if (clientRequest.has("cmd")) {
@@ -385,7 +478,7 @@ public class WebActivity extends AppCompatActivity {
             case Constants.CMD_DEBUG_MODE:
                 break;
             default:
-                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported) + " | CMD • " + cmd, Toast.LENGTH_SHORT).show();
+                // Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported) + " | CMD • " + cmd, Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -396,24 +489,45 @@ public class WebActivity extends AppCompatActivity {
         SysUtils.LogToScr(this, preference, "WebActivity | runCMD • " + cmd);
         switch (cmd) {
             case Constants.CMD_BACK:
-                // onBackPressed();
                 finish();
                 break;
             case Constants.CMD_BACK_LIGHT:
                 isNight = !isNight;
                 SysUtils.setBackLight(this, isNight);
                 break;
+            // =====================
+            // radio remote command
+            // =====================
+            case Constants.CMD_PREV:
+                newWebView.callbackToUI(JSConstants.CMD_RADIO_PREV);
+                break;
+            case Constants.CMD_MUTE:
+                newWebView.callbackToUI(JSConstants.CMD_RADIO_MUTE);
+                break;
+            case Constants.CMD_NEXT:
+                newWebView.callbackToUI(JSConstants.CMD_RADIO_NEXT);
+                break;
+            case Constants.CMD_FAV1:
+                newWebView.callbackToUI(JSConstants.CMD_RADIO_FAV1);
+                break;
+            case Constants.CMD_FAV2:
+                newWebView.callbackToUI(JSConstants.CMD_RADIO_FAV2);
+                break;
+            case Constants.CMD_FAV3:
+                newWebView.callbackToUI(JSConstants.CMD_RADIO_FAV3);
+                break;
+            case Constants.CMD_FAV4:
+                newWebView.callbackToUI(JSConstants.CMD_RADIO_FAV4);
+                break;
+            // ----------------------------------------
             case Constants.CMD_TIMER_SWAP:
-                newWebView.callbackToUI(JSConstants.CMD_SWAP);
-                break;
-            case Constants.CMD_DEBUG_MODE:
-                break;
             case Constants.CMD_WEATHER_FORECAST:
                 newWebView.callbackToUI(JSConstants.CMD_SWAP);
                 break;
             case Constants.CMD_WEATHER_MAGIC:
                 newWebView.callbackToUI(JSConstants.CMD_SEASON_MAGIC);
                 break;
+            case Constants.CMD_LOAD_RADIO:
             case Constants.CMD_LOAD_SMART:
             case Constants.CMD_LOAD_STATS:
             case Constants.CMD_LOAD_TIMER:
@@ -421,7 +535,7 @@ public class WebActivity extends AppCompatActivity {
                 sendNextAction(cmd);
                 break;
             default:
-                Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();
+                // Toast.makeText(getBaseContext(), getResources().getString(R.string.msg_unsupported), Toast.LENGTH_SHORT).show();
                 break;
         }
     }

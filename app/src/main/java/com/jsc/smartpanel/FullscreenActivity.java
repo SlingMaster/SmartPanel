@@ -34,7 +34,6 @@ public class FullscreenActivity extends AppCompatActivity {
     private long back_pressed;
     private int cur_screen = 0;
     public static int app_state = Constants.MAIN;
-
     public static int test_cycles = 0;
 
     @Override
@@ -82,7 +81,8 @@ public class FullscreenActivity extends AppCompatActivity {
             startActivity(configIntent);
         });
         // menu list applications ------------------------
-        findViewById(R.id.btn_radio).setOnClickListener(view -> runExternalApplication(1));
+//        findViewById(R.id.btn_radio).setOnClickListener(view -> runExternalApplication(1));
+        findViewById(R.id.btn_radio).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_RADIO));
         findViewById(R.id.btn_smart).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_SMART));
         findViewById(R.id.btn_stats).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_STATS));
         findViewById(R.id.btn_timer).setOnClickListener(view -> externalCMD(Constants.CMD_LOAD_TIMER));
@@ -93,7 +93,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // ====================================
     private int getHtmlID(int cmd) {
-        // "smarthome.html", "smarthome/statistic.html", "timer.html", "weather.html"
+        // "smarthome.html", "smarthome/statistic.html", "timer.html", "weather.html", "radio.html"
         int id;
         switch (cmd) {
             case Constants.CMD_LOAD_SMART:
@@ -104,6 +104,9 @@ public class FullscreenActivity extends AppCompatActivity {
                 break;
             case Constants.CMD_LOAD_WEATHER:
                 id = 3;
+                break;
+            case Constants.CMD_LOAD_RADIO:
+                id = 4;
                 break;
             default:
                 id = 2;
@@ -302,12 +305,16 @@ public class FullscreenActivity extends AppCompatActivity {
                     setSwitch(preference, "sw_swap");
                 }
                 break;
-            // ===========================
-            // external app --------------
-            case Constants.CMD_RADIO:
-                runExternalApplication(1);
+            case Constants.CMD_MUTE:
+
+                SysUtils.LogToScr(this, preference, "Switch " + cmd + " • " + (!state ? "ON" : "OFF"));
+                SysUtils.Mute(this, state);
+
+                sendCmdToWebView(jsonStr);
                 break;
-            // --------------------------
+            // ===========================
+            // external application
+            // ===========================
             case Constants.CMD_SLING:
                 runExternalApplication(2);
                 break;
@@ -315,6 +322,8 @@ public class FullscreenActivity extends AppCompatActivity {
             case Constants.CMD_WIFI_SCANNER:
                 runExternalApplication(3);
                 break;
+            // ===========================
+            // internal html application
             // ===========================
             default:
                 if (app_state == Constants.INTERNAL) {
@@ -325,7 +334,6 @@ public class FullscreenActivity extends AppCompatActivity {
                 }
                 break;
         }
-
     }
 
     // ===================================
@@ -368,6 +376,7 @@ public class FullscreenActivity extends AppCompatActivity {
             // Menu ======================
             // ===========================
             // html app ------------------
+            case Constants.CMD_LOAD_RADIO:
             case Constants.CMD_LOAD_SMART:
             case Constants.CMD_LOAD_STATS:
             case Constants.CMD_LOAD_TIMER:

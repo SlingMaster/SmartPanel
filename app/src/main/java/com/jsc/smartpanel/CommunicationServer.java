@@ -19,11 +19,10 @@ class CommunicationServer {
     private FullscreenActivity activity;
     private ServerSocket serverSocket;
     private Thread serverThread;
-    private ServerRunnable serverRunnable;
 
     CommunicationServer(@NonNull FullscreenActivity fullscreenActivity, int port) {
         activity = fullscreenActivity;
-        serverRunnable = new ServerRunnable(port);
+        ServerRunnable serverRunnable = new ServerRunnable(port);
         serverThread = new Thread(serverRunnable);
         serverThread.start();
     }
@@ -38,10 +37,12 @@ class CommunicationServer {
             serverPort = port;
         }
 
-        void updatePort(int port) {
-            serverPort = port;
-        }
+        // -------------------------------------
+        // void updatePort(int port) {
+        // serverPort = port;
+        // }
 
+        // -------------------------------------
         public void run() {
             try {
                 serverSocket = new ServerSocket(serverPort);
@@ -54,13 +55,13 @@ class CommunicationServer {
                     SessionRunnable sessionRunnable = new SessionRunnable(socket);
                     new Thread(sessionRunnable).start();
                 } catch (IOException e) {
-//                    e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
         }
     }
 
-    // ----------------------------------------------------
+    // ---------------------------------------
     class SessionRunnable implements Runnable {
         Socket clientSocket;
         private BufferedReader in;
@@ -104,7 +105,7 @@ class CommunicationServer {
         }
     }
 
-
+    // ===================================
     void stop() {
         try {
             if (serverThread != null) {
@@ -121,8 +122,9 @@ class CommunicationServer {
         }
     }
 
-    void updatePort(int port) {
-        if (port > 0)
-            serverRunnable.updatePort(port);
-    }
+    // ===================================
+    // void updatePort(int port) {
+    // if (port > 0)
+    //      serverRunnable.updatePort(port);
+    // }
 }

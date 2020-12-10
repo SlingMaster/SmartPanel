@@ -15,6 +15,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -23,8 +25,6 @@ import com.jsc.smartpanel.FullscreenActivity;
 
 import java.util.Calendar;
 import java.util.List;
-
-import android.preference.PreferenceManager;
 
 public class SysUtils {
     // ===================================
@@ -57,6 +57,19 @@ public class SysUtils {
         }
         LogToScr(mainActivity, PreferenceManager.getDefaultSharedPreferences(mainActivity), "Set BackLight : " + layout.screenBrightness);
         mainActivity.getWindow().setAttributes(layout);
+    }
+
+    // ===================================
+    public static void Mute(Activity mainActivity, Boolean mute) {
+        AudioManager amanager = (AudioManager) mainActivity.getSystemService(Context.AUDIO_SERVICE);
+        assert amanager != null;
+        // amanager.setStreamMute(AudioManager.STREAM_NOTIFICATION, state);
+        // amanager.setStreamMute(AudioManager.STREAM_ALARM, state);
+        // amanager.setStreamMute(AudioManager.STREAM_RING, state);
+        // amanager.setStreamMute(AudioManager.STREAM_SYSTEM, state);
+        // amanager.setStreamMute(AudioManager.STREAM_DTMF, state);
+        amanager.setStreamMute(AudioManager.STREAM_MUSIC, mute);
+        LogToScr(mainActivity, PreferenceManager.getDefaultSharedPreferences(mainActivity), "Sound Mute : " + mute);
     }
 
     // ===================================
