@@ -1,0 +1,58 @@
+{
+   "fm" : [
+      {
+         "freq" : "81.4",
+         "howl" : "",
+         "src" : "http://bbcmedia.ic.llnwd.net/stream/bbcmedia_radio1_mf_q",
+         "title" : "BBC Radio"
+      },
+      {
+         "freq" : "89.9",
+         "howl" : "",
+         "src" : "http://cast.nashe.ua/nashe",
+         "title" : "Nashe Radio"
+      },
+      {
+         "freq" : "98.8",
+         "howl" : "",
+         "src" : "http://online.melodiafm.ua/MelodiaFM_HD",
+         "title" : "Melodia FM"
+      },
+      {
+         "freq" : "100.2",
+         "howl" : "",
+         "src" : "https://tunein.streamguys1.com/cnn-new",
+         "title" : "CNN"
+      },
+      {
+         "freq" : "103.3",
+         "howl" : "",
+         "src" : "http://air2.radiorecord.ru:9003/rr_320",
+         "title" : "Russian Radio"
+      },
+      {
+         "freq" : "106.1",
+         "howl" : "",
+         "src" : "http://cast.avtoradio.ua/avtoradio",
+         "title" : "Avtoradio"
+      },
+      {
+         "freq" : "107.2",
+         "howl" : "",
+         "src" : "http://sc.apple-fm.net:9020/;?1291825855531.mp3",
+         "title" : "Apple FM"
+      },
+      {
+         "freq" : "107.4",
+         "howl" : "",
+         "src" : "http://62.80.190.246:8000/PRK128",
+         "title" : "Prosto Radio"
+      },
+      {
+         "freq" : "107.7",
+         "howl" : "",
+         "src" : "http://eptop128server.streamr.ru:8033/eptop128",
+         "title" : "Evropa Plus"
+      }
+   ]
+}

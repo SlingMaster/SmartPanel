@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html lang="en-US-x-Hixie">
+
+<head>
+    <title>Internet Radio</title>
+    <link rel="shortcut icon" href="radio/img/favicon.ico" />
+    <!-- link rel="shortcut icon" href="css/ww_icon.ico" /-->
+    <!--link rel="apple-touch-icon-precomposed" href="img/iww_icon.png"/-->
+    <!--meta content="text/html; charset=utf-8" http-equiv="Content-Type" /-->
+
+    <!-- Run in full-screen mode. -->
+    <!--meta name="apple-mobile-web-app-capable" content="yes"-->
+    <!-- Make the status bar black with white text. -->
+    <!--meta name="apple-mobile-web-app-status-bar-style" content="black"-->
+    <!-- Disable phone number detection. -->
+    <!--meta name="format-detection" content="telephone=no"-->
+    <!--meta http-equiv="Cache-Control" content="max-age=3600, must-revalidate" /-->
+    <!-- Set viewport. -->
+    <!-- <meta name="viewport" content="user-scalable=no, width=device-width" /> -->
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, target-densitydpi=device-dpi">
+    <!-- http://www.fontsquirrel.com/fontface/generator >
+        <link rel="stylesheet" type="text/css" href="fonts/stylesheet.min.css" 		media="screen" /-->
+    <style>
+        html,
+        body {
+            background: black;
+        }
+
+        .overlay {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: center center url(radio/img/iIcon.png) no-repeat;
+            background-size: auto 90px;
+            background-color: rgba(0, 0, 0, 1);
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="fonts/stylesheet.css" />
+    <link rel="stylesheet" href="radio/css/radio.min.css">
+    <!-- public libraries -->
+    <script src="libs/jquery-2.1.4.min.js"></script>
+    <script src="libs/howler.core.min.js"></script>
+
+    <script src="js/interface.min.js"></script>
+    <script src="js/utils.min.js"></script>
+    <script src="radio/js/radio.min.js"></script>
+
+</head>
+
+<body>
+    <div class="bg"></div>
+    <div id="win" class="cs_content_container" onclick="onClickSwap(event)">
+        <div id="fm_list" class="station-container"></div>
+        <div id="content" class="box"></div>
+    </div>
+    <div class="overlay"></div>
+
+</body>
+
+</html>
