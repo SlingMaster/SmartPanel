@@ -244,14 +244,14 @@ public class FullscreenActivity extends AppCompatActivity {
     private void AnalyzerRemoteCMD(String jsonStr) {
 
         JSONObject json;
-        int cmd = 0;
+        int cmd = Constants.CMD_EMPTY;
         boolean state = false;
         boolean is_state = false;
         try {
             json = new JSONObject(jsonStr);
 
             if (json.has("cmd")) {
-                cmd = json.optInt("cmd", 0);
+                cmd = json.optInt("cmd", Constants.CMD_EMPTY);
             }
             is_state = json.has("state");
             if (is_state) {

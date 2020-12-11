@@ -20,6 +20,7 @@ class Constants {
     static final int CMD_AUTO_SWAP = 0x05;
     static final int CMD_EXIT = 0x07;
     static final int CMD_DEBUG_MODE = 0x09;
+    static final int CMD_EMPTY = 0x99;
 
     // main menu cmd code ------------------------
 //    static final int CMD_RADIO = 0x0A;
@@ -47,8 +48,7 @@ class Constants {
     static final int CMD_SLING = 0x3C;
     static final int CMD_WIFI_SCANNER = 0x46;
     static final String[] HTML_APPS = {"smarthome.html", "smarthome/statistic.html", "timer.html", "weather.html", "radio.html"};
-    //    static final String[] PACKAGES = {"com.jsc.smartpanel", "air.InternetRadio", "air.SlingPlayerTablet3.A4", "com.pinapps.amped"};
-    static final String[] PACKAGES = {"com.jsc.smartpanel", "air.SlingPlayerTablet3.A4", "com.pinapps.amped"};
+    static final String[] PACKAGES = {"com.jsc.smartpanel", "air.InternetRadio", "air.SlingPlayerTablet3.A4", "com.pinapps.amped"};
     static final int[] SWAP_APPS = {CMD_LOAD_TIMER, CMD_LOAD_WEATHER, CMD_LOAD_SMART, CMD_LOAD_STATS};
     // intent action ----------------------------
     static final String SWAP_SCREEN = "swap_screen";
