@@ -3,7 +3,7 @@
     <string name="empty"> </string>
     <string name="msg_not_wifi_connection">No WiFi connection</string>
     <string name="weather_xml">http://informer.gismeteo.ru/xml/34300_1.xml</string>
-    <string name="root_debug">http://192.168.1.2/Projects/SmartPanel/</string>
+    <string name="root_debug">http://192.168.1.2/DEV_UI/SmartPanel/</string>
     <string name="root">file:///android_asset/</string>
 
     <string name="msg_exit">Press once again to exit!</string>
@@ -16,7 +16,8 @@
     <!--    JSC-ESP8266-SH | Bathroom |	Channel ID:117345 -->
     <string name="def_node_bathroom_url">http://192.168.1.77</string>
     <string name="def_node_bathroom_chip">2334292</string>
-
+    <string name="station_url">http://winecard.ltd.ua/dev/action_remote/fm_radio.json</string>
+    <string name="debug_station_url">http://192.168.1.2/DEV_UI/SmartPanel/radio/fm_radio.json</string>-->
     <!--    HTML URL  ================== -->
 
     <!--     debug url ================== -->
@@ -53,6 +54,9 @@
 
     <!-- string settings advanced -->
     <string name="pref_group_title_remote">REMOTE CONTROL INFO</string>
+    <string name="pref_group_title_radio">INTERNET RADIO</string>
+    <string name="pref_title_radio_link">Edit Link Radio List</string>
+<!--    <string name="pref_radio_link_desc">Auto Start Night Mode On/OFF"</string>-->
     <string name="pref_title_reset">Reset Default Preferences</string>
     <string name="pref_title_desc">For the changes to take effect return to application</string>
     <string name="pref_group_title_develop">DEVELOPER OPTIONS</string>

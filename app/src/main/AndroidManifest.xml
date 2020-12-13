@@ -25,7 +25,6 @@
         <activity
             android:name=".WebActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-
             android:keepScreenOn="true"
             android:label="@string/title_activity_web"
             android:theme="@style/FullscreenTheme" />

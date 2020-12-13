@@ -17,9 +17,6 @@ public class JSOut {
         _webView = new WeakReference<WebView>(appView);
     }
 
-    //    private final WebView getWebView() {
-//        return _webView.get();
-//    }
     private WebView getWebView() {
         return _webView.get();
     }
